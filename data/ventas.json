@@ -1,0 +1,16 @@
+[
+    {
+        "fecha": "2025-02-12T18:09:41.398839",
+        "cliente": "rosa chamas",
+        "productos": [
+            "01"
+        ]
+    },
+    {
+        "fecha": "2025-02-12T18:34:10.968318",
+        "cliente": "pablo lopez",
+        "productos": [
+            "01"
+        ]
+    }
+]
