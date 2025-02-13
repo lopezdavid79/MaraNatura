@@ -1,7 +1,17 @@
 {
-    "01": {
+    "2": {
         "nombre": "Bs mango rosa",
-        "stock": 10,
+        "stock": 3,
+        "precio": 23000.0
+    },
+    "1": {
+        "nombre": "todod\u00eda fMacadamia 400",
+        "stock": 6,
+        "precio": 9999.0
+    },
+    "3": {
+        "nombre": "Bs macadamia",
+        "stock": 3,
         "precio": 23000.0
     }
 }

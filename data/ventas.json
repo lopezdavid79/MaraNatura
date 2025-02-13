@@ -12,5 +12,33 @@
         "productos": [
             "01"
         ]
+    },
+    {
+        "fecha": "2025-02-13T07:20:46.605576",
+        "cliente": "mar\u00eda perez",
+        "productos": [
+            "01"
+        ]
+    },
+    {
+        "fecha": "2025-02-13T12:53:38.730688",
+        "cliente": "carlos",
+        "productos": [
+            "01"
+        ]
+    },
+    {
+        "fecha": "2025-02-13T12:53:59.034663",
+        "cliente": "",
+        "productos": [
+            ""
+        ]
+    },
+    {
+        "fecha": "2025-02-13T12:59:50.899803",
+        "cliente": "",
+        "productos": [
+            ""
+        ]
     }
 ]

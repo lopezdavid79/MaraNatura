@@ -7,6 +7,9 @@ class GestionProductos:
         self.nombre_archivo = nombre_archivo
         self.productos = self.cargar_datos()
 
+    def existe_producto(self, id_producto):
+        return str(id_producto) in self.productos  # Verifica si el ID (convertido a cadena) está en las claves
+
     def cargar_datos(self):
         try:
             with open(self.nombre_archivo, 'r') as archivo:
@@ -40,3 +43,6 @@ class GestionProductos:
             raise ValueError("No existe un producto con ese ID.")
         del self.productos[id]
         self.guardar_datos()
+
+    def obtener_todos(self):
+        return self.productos
