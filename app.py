@@ -1,12 +1,12 @@
 import wx
-from views.fr_listProduct import ListaProductos
-#from views.fr_principal import VentanaProducto
 
+
+from Views.fr_menu import Principal
 class MyApp(wx.App):
     def OnInit(self):
-        self.frame = ListaProductos(None, wx.ID_ANY, "Gestión de Productos")
-        self.SetTopWindow(self.frame)
+        self.frame = Principal(None, title="My App")
         self.frame.Show()
+        self.SetTopWindow(self.frame)
         return True
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ class GestionProductos:
         self.productos[id] = {'nombre': nombre, 'stock': stock, 'precio': precio}
         self.guardar_datos()
 
-    def modificar_producto(self, id, nombre=None, stock=None, precio=None):
+    def editar_producto(self, id, nombre=None, stock=None, precio=None):
         if id not in self.productos:
             raise ValueError("No existe un producto con ese ID.")
         if nombre:

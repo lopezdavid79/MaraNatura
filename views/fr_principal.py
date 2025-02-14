@@ -10,9 +10,12 @@ gestion_productos = GestionProductos()
 import wx
 
 class VentanaProducto(wx.Frame):
-    def __init__(self, parent, id,title):
-        super().__init__(parent,id,  title=title)  # Corregido: Pasar 'title' como keyword argument
+    def __init__(self, parent, id=None, title="Nuevo Producto", *args, **kwds):
+        super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds) # Corrección
 
+
+        self.id = id  # Guarda el ID (puede ser None si es un nuevo producto)
+        self.SetTitle(title) # Usa el título proporcionado
         # Panel principal
         panel = wx.Panel(self)
 

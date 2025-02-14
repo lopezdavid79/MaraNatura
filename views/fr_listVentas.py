@@ -1,11 +1,11 @@
 import wx
 import wx.lib.mixins.listctrl as listmix
-from module.GestionProducto import GestionProductos
+from module.Ventas import GestionVentas,Venta
 
 # Inicialización de la gestión de productos
-gestion_productos = GestionProductos()
+gestion_ventas= GestionVentas()
 
-class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
+class ListaVentas(wx.Frame, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, id=None, title="Nuevo Producto", *args, **kwds):
         super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds) # Corrección
 
@@ -15,18 +15,18 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         # Crear la lista de productos
         self.list_ctrl = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.BORDER_SUNKEN, pos=(10, 10), size=(460, 250))
         self.list_ctrl.InsertColumn(0, 'ID', width=50)
-        self.list_ctrl.InsertColumn(1, 'Producto', width=150)
-        self.list_ctrl.InsertColumn(2, 'Stock', width=80)
-        self.list_ctrl.InsertColumn(3, 'Precio', width=80)
+        self.list_ctrl.InsertColumn(1, 'Fecha', width=80)
+        self.list_ctrl.InsertColumn(2, 'Cliente', width=150)        
+        self.list_ctrl.InsertColumn(3, 'Total', width=80)
         
-        # Cargar productos en la lista
-        self.cargar_productos()
+        # Cargar ventas en la lista
+        self.cargar_ventas()
         
         # Evento para detectar tecla Enter
-        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.mostrar_detalle_producto)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.mostrar_detalle_ventas)
 
-        # Botón para agregar producto
-        btn_nuevo = wx.Button(panel, label="Nuevo Producto", pos=(50, 300))
+        # Botón para agregar venta
+        btn_nuevo = wx.Button(panel, label="Nueva Venta", pos=(50, 300))
         btn_nuevo.Bind(wx.EVT_BUTTON, self.abrir_dialogo_nuevo)
         
         # Botón para cerrar
@@ -35,53 +35,53 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         
         self.Show()
     
-    def cargar_productos(self):
+    def cargar_ventas(self):
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
-        productos = gestion_productos.obtener_todos()
+        ventas = gestion_ventas.obtener_todos()
 
-        for id_producto, datos in productos.items():
-            index = self.list_ctrl.InsertItem(self.list_ctrl.GetItemCount(), str(id_producto))
-            self.list_ctrl.SetItem(index, 1, datos["nombre"])
-            self.list_ctrl.SetItem(index, 2, str(datos["stock"]))
-            self.list_ctrl.SetItem(index, 3, str(datos["precio"]))
+        for id_venta, datos in ventas.items():
+            index = self.list_ctrl.InsertItem(self.list_ctrl.GetItemCount(), str(id_venta))
+            self.list_ctrl.SetItem(index, 1, datos["fecha"])
+            self.list_ctrl.SetItem(index, 2, str(datos["cliente"]))
+            self.list_ctrl.SetItem(index, 3, str(datos["total"]))
     
-    def mostrar_detalle_producto(self, event):
+    def mostrar_detalle_ventas(self, event):
         index = event.GetIndex()
-        id_producto = self.list_ctrl.GetItemText(index)
+        id_venta= self.list_ctrl.GetItemText(index)
 
         # Obtener los detalles del producto
-        productos = gestion_productos.obtener_todos()
-        if id_producto in productos:
-            datos = productos[id_producto]
-            dialogo = DetalleProductoDialog(self, id_producto, datos)
+        ventas = gestion_ventas.obtener_todos()
+        if id_venta in ventas:
+            datos = ventas[id_venta]
+            dialogo = DetalleVentaDialog(self, id_venta, datos)
             dialogo.ShowModal()
             dialogo.Destroy()
             self.cargar_productos()  # Actualizar la lista después de la edición
     
     def abrir_dialogo_nuevo(self, event):
-        dialogo = AgregarProductoDialog(self)
+        dialogo = AgregarventaDialog(self)
         if dialogo.ShowModal() == wx.ID_OK:
-            self.cargar_productos()  # Actualiza la lista después de agregar un producto
+            self.cargar_venta()  # Actualiza la lista después de agregar un producto
         dialogo.Destroy()
     
     def cerrar_ventana(self, event):
         self.Close()
 
 
-class DetalleProductoDialog(wx.Dialog):
-    def __init__(self, parent, id_producto, datos):
+class DetalleVentaDialog(wx.Dialog):
+    def __init__(self, parent, id_venta, datos):
         super().__init__(parent, title="Detalle del Producto", size=(300, 250))
-        self.id_producto = id_producto
+        self.id_venta= id_venta
 
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         # Mostrar detalles
-        vbox.Add(wx.StaticText(panel, label=f"ID: {id_producto}"), flag=wx.LEFT | wx.TOP, border=10)
-        vbox.Add(wx.StaticText(panel, label=f"Nombre: {datos['nombre']}"), flag=wx.LEFT | wx.TOP, border=10)
-        vbox.Add(wx.StaticText(panel, label=f"Stock: {datos['stock']}"), flag=wx.LEFT | wx.TOP, border=10)
-        vbox.Add(wx.StaticText(panel, label=f"Precio: {datos['precio']}"), flag=wx.LEFT | wx.TOP, border=10)
-
+        vbox.Add(wx.StaticText(panel, label=f"ID: {id_venta}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Fecha: {datos['fecha']}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Cliente: {datos['cliente']}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Total: {datos['total']}"), flag=wx.LEFT | wx.TOP, border=10)
+"""
         # Botón para editar
         btn_editar = wx.Button(panel, label="Editar")
         btn_editar.Bind(wx.EVT_BUTTON, self.editar_producto)
@@ -161,3 +161,4 @@ class EditarProductoDialog(wx.Dialog):
             wx.MessageBox("Stock debe ser un número entero y precio un número válido", "Error", wx.OK | wx.ICON_ERROR)
         except Exception as e:
             wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)
+"""
