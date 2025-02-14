@@ -20,6 +20,9 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         # Cargar productos en la lista
         self.cargar_productos()
         
+        # Evento para detectar tecla Enter
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.mostrar_detalle_producto)
+
         # Botón para agregar producto
         btn_nuevo = wx.Button(panel, label="Nuevo Producto", pos=(50, 300))
         btn_nuevo.Bind(wx.EVT_BUTTON, self.abrir_dialogo_nuevo)
@@ -40,6 +43,19 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.list_ctrl.SetItem(index, 2, str(datos["stock"]))
             self.list_ctrl.SetItem(index, 3, str(datos["precio"]))
     
+    def mostrar_detalle_producto(self, event):
+        index = event.GetIndex()
+        id_producto = self.list_ctrl.GetItemText(index)
+
+        # Obtener los detalles del producto
+        productos = gestion_productos.obtener_todos()
+        if id_producto in productos:
+            datos = productos[id_producto]
+            dialogo = DetalleProductoDialog(self, id_producto, datos)
+            dialogo.ShowModal()
+            dialogo.Destroy()
+            self.cargar_productos()  # Actualizar la lista después de la edición
+    
     def abrir_dialogo_nuevo(self, event):
         dialogo = AgregarProductoDialog(self)
         if dialogo.ShowModal() == wx.ID_OK:
@@ -50,60 +66,95 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         self.Close()
 
 
-class AgregarProductoDialog(wx.Dialog):
-    def __init__(self, parent):
-        super().__init__(parent, title="Agregar Producto", size=(300, 250))
-        
+class DetalleProductoDialog(wx.Dialog):
+    def __init__(self, parent, id_producto, datos):
+        super().__init__(parent, title="Detalle del Producto", size=(300, 250))
+        self.id_producto = id_producto
+
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
-        
-        # Campos de entrada
-        vbox.Add(wx.StaticText(panel, label="ID Producto:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_id = wx.TextCtrl(panel)
-        vbox.Add(self.txt_id, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
-        
+
+        # Mostrar detalles
+        vbox.Add(wx.StaticText(panel, label=f"ID: {id_producto}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Nombre: {datos['nombre']}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Stock: {datos['stock']}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Precio: {datos['precio']}"), flag=wx.LEFT | wx.TOP, border=10)
+
+        # Botón para editar
+        btn_editar = wx.Button(panel, label="Editar")
+        btn_editar.Bind(wx.EVT_BUTTON, self.editar_producto)
+
+        # Botón para cerrar
+        btn_cerrar = wx.Button(panel, wx.ID_CANCEL, "Cerrar")
+
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(btn_editar, flag=wx.RIGHT, border=10)
+        hbox.Add(btn_cerrar)
+
+        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
+
+        panel.SetSizer(vbox)
+
+    def editar_producto(self, event):
+        dialogo = EditarProductoDialog(self, self.id_producto)
+        if dialogo.ShowModal() == wx.ID_OK:
+            self.EndModal(wx.ID_OK)  # Cierra el diálogo y recarga la lista
+        dialogo.Destroy()
+
+
+class EditarProductoDialog(wx.Dialog):
+    def __init__(self, parent, id_producto):
+        super().__init__(parent, title="Editar Producto", size=(300, 250))
+        self.id_producto = id_producto
+
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        productos = gestion_productos.obtener_todos()
+        datos = productos.get(id_producto, {})
+
+        # Campos editables
         vbox.Add(wx.StaticText(panel, label="Nombre:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_nombre = wx.TextCtrl(panel)
+        self.txt_nombre = wx.TextCtrl(panel, value=datos.get("nombre", ""))
         vbox.Add(self.txt_nombre, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
-        
+
         vbox.Add(wx.StaticText(panel, label="Stock:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_stock = wx.TextCtrl(panel)
+        self.txt_stock = wx.TextCtrl(panel, value=str(datos.get("stock", "")))
         vbox.Add(self.txt_stock, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
-        
+
         vbox.Add(wx.StaticText(panel, label="Precio:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_precio = wx.TextCtrl(panel)
+        self.txt_precio = wx.TextCtrl(panel, value=str(datos.get("precio", "")))
         vbox.Add(self.txt_precio, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
-        
+
         # Botones
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         btn_ok = wx.Button(panel, wx.ID_OK, "Guardar")
         btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
         hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
         hbox.Add(btn_cancel)
-        
-        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
-        
-        panel.SetSizer(vbox)
-        
-        # Bind para el botón "Guardar"
-        self.Bind(wx.EVT_BUTTON, self.guardar_producto, btn_ok)
 
-    def guardar_producto(self, event):
-        id_producto = self.txt_id.GetValue()
+        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
+
+        panel.SetSizer(vbox)
+
+        # Bind para el botón "Guardar"
+        self.Bind(wx.EVT_BUTTON, self.guardar_cambios, btn_ok)
+
+    def guardar_cambios(self, event):
         nombre = self.txt_nombre.GetValue()
         stock = self.txt_stock.GetValue()
         precio = self.txt_precio.GetValue()
 
-        if not id_producto or not nombre or not stock or not precio:
+        if not nombre or not stock or not precio:
             wx.MessageBox("Todos los campos son obligatorios", "Error", wx.OK | wx.ICON_ERROR)
             return
 
         try:
             stock = int(stock)
             precio = float(precio)
-            gestion_productos.agregar_producto(id_producto, nombre, stock, precio)
-            wx.MessageBox("Producto agregado con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
-            self.EndModal(wx.ID_OK)  # Cierra el diálogo exitosamente
+            gestion_productos.editar_producto(self.id_producto, nombre, stock, precio)
+            wx.MessageBox("Producto actualizado con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
+            self.EndModal(wx.ID_OK)
         except ValueError:
             wx.MessageBox("Stock debe ser un número entero y precio un número válido", "Error", wx.OK | wx.ICON_ERROR)
         except Exception as e:
