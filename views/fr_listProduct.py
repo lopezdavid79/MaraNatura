@@ -1,7 +1,8 @@
 import wx
 import wx.lib.mixins.listctrl as listmix
-from module.GestionProducto import GestionProductos
 
+from module.GestionProducto import GestionProductos
+from Views.fr_producto import VentanaProducto
 # Inicialización de la gestión de productos
 gestion_productos = GestionProductos()
 
@@ -59,11 +60,11 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.cargar_productos()  # Actualizar la lista después de la edición
     
     def abrir_dialogo_nuevo(self, event):
-        dialogo = AgregarProductoDialog(self)
-        if dialogo.ShowModal() == wx.ID_OK:
-            self.cargar_productos()  # Actualiza la lista después de agregar un producto
-        dialogo.Destroy()
-    
+        producto_form = VentanaProducto(self, id=None, title="Nuevo Producto")  # self es el padre de la ventana
+        producto_form.Show()  # Mostrar el formulario         
+        self.cargar_productos()  # Actualiza la lista después de agregar un producto
+
+
     def cerrar_ventana(self, event):
         self.Close()
 

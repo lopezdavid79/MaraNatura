@@ -1,8 +1,8 @@
 import wx
 
 from Views.fr_listProduct import ListaProductos
-from Views.fr_principal import VentanaProducto
-from Views.fr_listVentas import ListaVentas
+from Views.fr_producto import VentanaProducto
+from Views.fr_listSale import ListSale
 
 
 class Principal(wx.Frame):
@@ -38,7 +38,7 @@ class Principal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_new_product, new_product_item)
         self.Bind(wx.EVT_MENU, self.on_list_product,list_product_item)
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
-        #self.Bind(wx.EVT_MENU, self.on_list_sale, new_sale_item)
+        self.Bind(wx.EVT_MENU, self.on_list_sale, new_sale_item)
 
         self.SetTitle("Gestión Ventas de Mara Natura")
         self.SetSize((600, 400))
@@ -57,8 +57,8 @@ class Principal(wx.Frame):
         
 
     def on_list_sale(self, event):
-        # Aquí se abriría el formulario para listado producto
-        list_sale_form = ListaVentas(self, id=None, title="Lista de Ventas")  # self es el padre de la ventana
+        # Aquí se abriría el formulario para listado de ventas.
+        list_sale_form = ListSale(self, id=None, title="Lista de Ventas")  # self es el padre de la ventana
         list_sale_form.Show()  # Mostrar el formulario 
         
 

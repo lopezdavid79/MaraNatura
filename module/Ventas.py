@@ -3,17 +3,19 @@ from datetime import datetime  # Importa el módulo datetime
 from module.Productos import Producto  # Importa la clase Producto
 
 class Venta:
-    def __init__(self, fecha,cliente, productos):
+    def __init__(self, id, fecha,cliente, productos):
+        self.id = id
         self.fecha = fecha or datetime.now().isoformat()  # Fecha actual por defecto
         self.cliente = cliente
-        self.productos = productos  # Lista de IDs de productos vendidos
+        self.productos = productos  # Lis   ta de IDs de productos vendidos
 
     def calcular_total(self, productos_dict):
         total = 0
         for producto_id in self.productos:
             producto = productos_dict.get(producto_id)
             if producto:
-                total += producto.precio
+                #total += producto.precio
+                total += producto["precio"]  # 🔹 Accede correctamente al precio                total += producto["precio"]  # 🔹 Accede correctamente al precio
         return total
 
 class GestionVentas:
@@ -35,7 +37,11 @@ class GestionVentas:
             json.dump(self.ventas, archivo, indent=4)
 
     def registrar_venta(self, fecha,cliente, productos_ids, productos_dict):
-        nueva_venta = Venta(fecha,cliente, productos_ids)
+        nuevo_id = len(self.ventas) + 1  # Asigna el siguiente ID disponible
+        nueva_venta = Venta(nuevo_id, fecha,cliente, productos_ids)
+        total_venta = nueva_venta.calcular_total(productos_dict)  # 🔹 Calcula el total
+        venta_dict = nueva_venta.__dict__
+        venta_dict["total"] = total_venta  # 🔹 Guarda el total en el diccionario
         self.ventas.append(nueva_venta.__dict__)  # Guarda el diccionario de la venta
         self.guardar_datos()
         # Actualizar el stock de los productos vendidos
@@ -46,3 +52,6 @@ class GestionVentas:
                 producto.stock -= 1
                 productos_dict[producto_id] = producto.__dict__ # Actualiza el diccionario con el objeto producto modificado
         return nueva_venta
+
+    def obtener_todos(self):
+        return {str(index + 1): venta for index, venta in enumerate(self.ventas)}
