@@ -1,17 +1,20 @@
 {
-    "2": {
-        "nombre": "Bs mango rosa",
-        "stock": 3,
-        "precio": 23000.0
-    },
     "1": {
-        "nombre": "todod\u00eda fMacadamia 400",
-        "stock": 6,
+        "id": 1,
+        "nombre": "jabon eco",
+        "stock": 9,
         "precio": 9999.0
     },
-    "3": {
-        "nombre": "Bs macadamia",
+    "2": {
+        "id": 2,
+        "nombre": "Bs mango rosa",
         "stock": 5,
         "precio": 23000.0
+    },
+    "3": {
+        "id": 3,
+        "nombre": "jabones natur\u00e9",
+        "stock": 6,
+        "precio": 6000.0
     }
 }

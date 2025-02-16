@@ -8,14 +8,36 @@ class Venta:
         self.fecha = fecha or datetime.now().isoformat()  # Fecha actual por defecto
         self.cliente = cliente
         self.productos = productos  # Lis   ta de IDs de productos vendidos
+        
+
 
     def calcular_total(self, productos_dict):
+
+        
+        #print(f"Diccionario recibido con {len(productos_dict)} elementos: {productos_dict}")
         total = 0
         for producto_id in self.productos:
-            producto = productos_dict.get(producto_id)
+            print(f"Tipo de producto_id: {type(producto_id)}")
+        # Verificar si el producto_id existe en productos_dict
+            if producto_id not in productos_dict:
+                print(f"Advertencia: Producto con ID {producto_id} no encontrado en el diccionario.")
+                continue  # Salta al siguiente producto si no se encuentra en el diccionario
+
+            
+            producto = productos_dict.get(producto_id)  # Obtén los datos del producto
+        
             if producto:
-                #total += producto.precio
-                total += producto["precio"]  # 🔹 Accede correctamente al precio                total += producto["precio"]  # 🔹 Accede correctamente al precio
+                # Verifica que el producto tiene la clave "precio"
+                if "precio" in producto:
+                    precio_producto = producto["precio"]  # Accede al precio del producto
+                    print(f"Producto ID: {producto_id}, Precio: {precio_producto}")  # Depuración: Verificar el precio
+                    total += precio_producto  # Sumar el precio al total
+                else:
+                    print(f"Advertencia: El producto con ID {producto_id} no tiene la clave 'precio'.")
+            else:
+                print(f"Error: No se pudo obtener el producto con ID {producto_id}.")
+    
+        print(f"Total calculado: {total}")  # Depuración: Verificar el total calculado
         return total
 
 class GestionVentas:
@@ -36,21 +58,26 @@ class GestionVentas:
         with open(self.nombre_archivo, 'w') as archivo:
             json.dump(self.ventas, archivo, indent=4)
 
-    def registrar_venta(self, fecha,cliente, productos_ids, productos_dict):
+
+    def registrar_venta(self, fecha, cliente, productos_ids, productos_dict, total_venta):
         nuevo_id = len(self.ventas) + 1  # Asigna el siguiente ID disponible
-        nueva_venta = Venta(nuevo_id, fecha,cliente, productos_ids)
-        total_venta = nueva_venta.calcular_total(productos_dict)  # 🔹 Calcula el total
+        nueva_venta = Venta(nuevo_id, fecha, cliente, productos_ids)
+
+    # Guardar el total directamente en el diccionario de la venta
         venta_dict = nueva_venta.__dict__
         venta_dict["total"] = total_venta  # 🔹 Guarda el total en el diccionario
-        self.ventas.append(nueva_venta.__dict__)  # Guarda el diccionario de la venta
-        self.guardar_datos()
-        # Actualizar el stock de los productos vendidos
+        self.ventas.append(venta_dict)  # Guarda el diccionario de la venta en la lista
+
+        self.guardar_datos()  # Guardar cambios en persistencia
+
+    # Actualizar el stock de los productos vendidos
         for producto_id in productos_ids:
-            producto_data = productos_dict.get(producto_id)  # Obtén los datos del producto (diccionario)
+            producto_data = productos_dict.get(producto_id)  # Obtén los datos del producto
             if producto_data:
-                producto = Producto(producto_id, producto_data['nombre'], producto_data['stock'], producto_data['precio']) # Crea el objeto Producto
+                producto = Producto(producto_id, producto_data['nombre'], producto_data['stock'], producto_data['precio'])
                 producto.stock -= 1
-                productos_dict[producto_id] = producto.__dict__ # Actualiza el diccionario con el objeto producto modificado
+                productos_dict[producto_id] = producto.__dict__  # Actualiza el diccionario con el nuevo stock
+        print(f"Venta guardada: {venta_dict}")
         return nueva_venta
 
     def obtener_todos(self):
