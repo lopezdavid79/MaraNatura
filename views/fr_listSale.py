@@ -1,11 +1,14 @@
 import wx
 import wx.lib.mixins.listctrl as listmix
+
+from module.GestionCliente import GestionClientes
 from module.Ventas import GestionVentas, Venta
 from module.Productos import Producto  # Asegurar que importamos la gestión de productos
 from module.GestionProducto import  GestionProductos  # Asegurar que importamos la gestión de productos
 import re
 Producto  # Asegurar que importamos la gestión de productos
 # Inicialización de la gestión de ventas y productos
+gestion_clientes = GestionClientes()
 gestion_productos = GestionProductos()
 gestion_ventas = GestionVentas()
 
@@ -121,10 +124,16 @@ class AgregarVentaDialog(wx.Dialog):
 
         
         # Cliente
+        # Cliente
         vbox.Add(wx.StaticText(panel, label="Cliente:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_cliente = wx.TextCtrl(panel)
+        self.txt_cliente = wx.SearchCtrl(panel, style=wx.TE_PROCESS_ENTER)
         vbox.Add(self.txt_cliente, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
-        
+        self.lista_clientes = wx.ListBox(panel, style=wx.LB_SINGLE)
+        vbox.Add(self.lista_clientes, flag=wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, border=10, proportion=1)
+        self.txt_cliente.Bind(wx.EVT_TEXT, self.filtrar_clientes)
+        self.lista_clientes.Bind(wx.EVT_LISTBOX, self.seleccionar_cliente)
+        self.cargar_clientes()
+
         # Buscar Producto
         vbox.Add(wx.StaticText(panel, label="Buscar Producto:"), flag=wx.LEFT | wx.TOP, border=10)
         self.txt_buscar_producto = wx.TextCtrl(panel)
@@ -168,6 +177,24 @@ class AgregarVentaDialog(wx.Dialog):
         vbox.Add(self.lbl_total, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
         self.Layout()  # Layout inicial del diálogo
         self.txt_cliente.SetFocus()  # Establecer el foco en txt_cliente
+
+
+    def cargar_clientes(self):
+        self.clientes_dict = gestion_clientes.obtener_todos()
+        self.lista_clientes.Clear()
+        for id_cliente, datos in self.clientes_dict.items():
+            self.lista_clientes.Append(f"{datos['nombre']} ({datos['tel']})")
+    def filtrar_clientes(self, event):
+        filtro = self.txt_cliente.GetValue().lower()
+        self.lista_clientes.Clear()
+        for id_cliente, datos in self.clientes_dict.items():
+            if filtro in datos['nombre'].lower():
+                self.lista_clientes.Append(f"{datos['nombre']} ({datos['tel']})")
+    def seleccionar_cliente(self, event):
+        seleccion = self.lista_clientes.GetStringSelection()
+        if seleccion:
+            self.txt_cliente.SetValue(seleccion.split(' (')[0])
+            self.lista_clientes.Clear()
 
 
     def cargar_productos(self):

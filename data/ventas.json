@@ -7,5 +7,15 @@
             2
         ],
         "total": 23000.0
+    },
+    {
+        "id": 2,
+        "fecha": "2025-02-17T18:52:21.115082",
+        "cliente": "Andrea Perez",
+        "productos": [
+            3,
+            2
+        ],
+        "total": 29000.0
     }
 ]
