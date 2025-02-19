@@ -138,8 +138,8 @@ class EditarClienteDialog(wx.Dialog):
         vbox.Add(self.txt_telefono, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
         vbox.Add(wx.StaticText(panel, label="Dirección:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_email = wx.TextCtrl(panel, value=datos.get("dire", ""))
-        vbox.Add(self.txt_email, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+        self.txt_dire= wx.TextCtrl(panel, value=datos.get("dire", ""))
+        vbox.Add(self.txt_dire, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
         # Botones
         hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -158,7 +158,7 @@ class EditarClienteDialog(wx.Dialog):
     def guardar_cambios(self, event):
         nombre = self.txt_nombre.GetValue()
         tel = self.txt_telefono.GetValue()
-        dire = self.txt_email.GetValue()
+        dire = self.txt_dire.GetValue()
 
         if not nombre or not tel or not dire:
             wx.MessageBox("Todos los campos son obligatorios", "Error", wx.OK | wx.ICON_ERROR)

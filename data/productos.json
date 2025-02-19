@@ -1,20 +1,20 @@
-{
-    "1": {
-        "id": 1,
-        "nombre": "jabon eco",
-        "stock": 9,
-        "precio": 9999.0
-    },
-    "2": {
-        "id": 2,
+[
+    {
+        "id": 901,
         "nombre": "Bs mango rosa",
-        "stock": 5,
+        "stock": 10,
         "precio": 23000.0
     },
-    "3": {
-        "id": 3,
-        "nombre": "jabones natur\u00e9",
-        "stock": 6,
-        "precio": 6000.0
+    {
+        "id": 911,
+        "nombre": "todod\u00eda fMacadamia 400",
+        "stock": 10,
+        "precio": 10000.0
+    },
+    {
+        "id": 1122,
+        "nombre": "todod\u00eda frutas rojas 400",
+        "stock": 10,
+        "precio": 13900.0
     }
-}
+]

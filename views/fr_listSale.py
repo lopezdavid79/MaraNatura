@@ -1,3 +1,6 @@
+import os
+import json
+import re
 import wx
 import wx.lib.mixins.listctrl as listmix
 
@@ -51,6 +54,7 @@ class ListSale(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.list_ctrl.SetItem(index, 3, str(datos["total"]))  # Ahora sí muestra el total
     
     def mostrar_detalle_ventas(self, event):
+        
         index = event.GetIndex()
         id_venta = self.list_ctrl.GetItemText(index)
 
@@ -62,6 +66,7 @@ class ListSale(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             print("no hay productos ")
         if id_venta in ventas:
             datos = ventas[id_venta]
+            print("Datos de la venta antes de pasar al diálogo:", datos)  # Depurar aquí
             dialogo = DetalleVentaDialog(self, id_venta, datos,productos_dict)
             dialogo.ShowModal()
             dialogo.Destroy()
@@ -78,40 +83,52 @@ class ListSale(wx.Frame, listmix.ListCtrlAutoWidthMixin):
 
 
 class DetalleVentaDialog(wx.Dialog):
-    def __init__(self, parent, id_venta, datos,productos_dict):
-        super().__init__(parent, title="Detalle de la Venta", size=(300, 250))
-        self.id_venta = id_venta
-        self.productos_dict=productos_dict
-
-        panel = wx.Panel(self)
-        vbox = wx.BoxSizer(wx.VERTICAL)
-
-        # Mostrar detalles
-
-        vbox.Add(wx.StaticText(panel, label=f"ID: {id_venta}"), flag=wx.LEFT | wx.TOP, border=10)
-        vbox.Add(wx.StaticText(panel, label=f"Fecha: {datos['fecha']}"), flag=wx.LEFT | wx.TOP, border=10)
-        vbox.Add(wx.StaticText(panel, label=f"Cliente: {datos['cliente']}"), flag=wx.LEFT | wx.TOP, border=10)
+    def __init__(self, parent, id_venta, datos, productos_dict):
+        super().__init__(parent, title="Detalle de Venta", size=(500, 400))
         
+        # Guardamos el diccionario de productos y otros datos necesarios
+        self.productos_dict = productos_dict  # Lista de productos
+        self.id_venta = id_venta
+        self.datos = datos
+        
+        # Panel de la ventana
+        panel = wx.Panel(self)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        # Mostrar detalles de la venta
+        self.lista_productos = wx.ListBox(panel, style=wx.LB_SINGLE)
+        self.sizer.Add(self.lista_productos, 1, flag=wx.EXPAND|wx.ALL, border=5)
+        
+        self.lbl_cliente = wx.StaticText(panel, label=f"Cliente: {self.datos['cliente']}")
+        self.sizer.Add(self.lbl_cliente, 0, flag=wx.ALL, border=5)
 
-        productos_str = ""
-        for producto_id in datos['productos']:
-            producto = self.productos_dict.get(producto_id)  # Obtener detalles del producto
-            print(f"Detalles del producto con ID {producto_id}: {producto}")
+        self.lbl_total = wx.StaticText(panel, label=f"Total: ${self.datos['total']}")
+        self.sizer.Add(self.lbl_total, 0, flag=wx.ALL, border=5)
+
+        # Cargar los productos seleccionados en la venta
+        self.cargar_productos()
+    # Botón para cerrar el diálogo
+        self.btn_cerrar = wx.Button(panel, label="Cerrar")
+        self.sizer.Add(self.btn_cerrar, 0, flag=wx.CENTER|wx.ALL, border=5)
+
+            # Bind the close button to the Close method
+        self.btn_cerrar.Bind(wx.EVT_BUTTON, self.on_cerrar)
+
+        panel.SetSizerAndFit(self.sizer)
+
+    def cargar_productos(self):
+        # Recorremos los IDs de los productos asociados a la venta
+        for producto_id in self.datos["productos"]:
+            producto = next((p for p in self.productos_dict if p["id"] == producto_id), None)
             if producto:
-                productos_str += f"- {producto['nombre']} (${producto['precio']})\n"  # Mostrar nombre y precio
+                item_text = f"ID: {producto['id']} - {producto['nombre']} - Stock: {producto['stock']} - Precio: ${producto['precio']}"
+                self.lista_productos.Append(item_text)
             else:
-                productos_str += f"- Producto no encontrado (ID: {producto_id})\n"  # Manejar producto no encontrado
-
-        vbox.Add(wx.StaticText(panel, label=f"Productos:\n{productos_str}"), flag=wx.LEFT | wx.TOP, border=10)  # Mostrar la lista de productos
-
-        vbox.Add(wx.StaticText(panel, label=f"Total: ${datos['total']}"), flag=wx.LEFT | wx.TOP, border=10)  # Mostrar el total
-
-        btn_cerrar = wx.Button(panel, wx.ID_CANCEL, "Cerrar")
-        vbox.Add(btn_cerrar, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
-
-        panel.SetSizer(vbox)
+                print(f"Error: Producto con ID {producto_id} no encontrado.")
 
 
+    def on_cerrar(self, event):
+            self.EndModal(wx.ID_OK)  # Cierra el diálogo cuando se hace clic en el botón "Cerrar"
 # Clase para agregar una nueva venta con selección de producto por nombre
 
 
@@ -120,10 +137,10 @@ class AgregarVentaDialog(wx.Dialog):
         super().__init__(parent, title="Nueva Venta", size=(400, 400))
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
-
+        self.nombre_archivo_productos = 'data/productos.json'
 
         
-        # Cliente
+        
         # Cliente
         vbox.Add(wx.StaticText(panel, label="Cliente:"), flag=wx.LEFT | wx.TOP, border=10)
         self.txt_cliente = wx.SearchCtrl(panel, style=wx.TE_PROCESS_ENTER)
@@ -169,6 +186,8 @@ class AgregarVentaDialog(wx.Dialog):
         self.productos_seleccionados = []
         self.productos_dict = self.cargar_productos()
         self.actualizar_lista_productos()
+        self.txt_cliente.Bind(wx.EVT_KEY_DOWN, self.on_key_cliente)  # Detectar Enter y navegación
+        self.lista_clientes.Bind(wx.EVT_LISTBOX_DCLICK, self.seleccionar_cliente)  # Doble clic para seleccionar
 
         # Total de la venta
         vbox.Add(wx.StaticText(panel, label="Total:"), flag=wx.LEFT | wx.TOP, border=10)
@@ -177,6 +196,14 @@ class AgregarVentaDialog(wx.Dialog):
         vbox.Add(self.lbl_total, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
         self.Layout()  # Layout inicial del diálogo
         self.txt_cliente.SetFocus()  # Establecer el foco en txt_cliente
+        # 🔥 Atajos de teclado
+        accel_tbl = wx.AcceleratorTable([
+        (wx.ACCEL_CTRL, ord('G'), btn_ok.GetId()),  # Ctrl + G para guardar
+        (wx.ACCEL_CTRL, ord('E'), self.btn_eliminar_producto.GetId()),  # Ctrl + E para eliminar producto
+        (wx.ACCEL_CTRL, ord('B'), self.txt_buscar_producto.GetId()),  # Ctrl + B para buscar producto
+    ])
+        self.SetAcceleratorTable(accel_tbl)
+ 
 
 
     def cargar_clientes(self):
@@ -184,30 +211,80 @@ class AgregarVentaDialog(wx.Dialog):
         self.lista_clientes.Clear()
         for id_cliente, datos in self.clientes_dict.items():
             self.lista_clientes.Append(f"{datos['nombre']} ({datos['tel']})")
+
     def filtrar_clientes(self, event):
+        """Filtra los clientes según el texto ingresado y mantiene la navegación."""
         filtro = self.txt_cliente.GetValue().lower()
+        seleccion_anterior = self.lista_clientes.GetSelection()  # Guardar selección previa
         self.lista_clientes.Clear()
+
         for id_cliente, datos in self.clientes_dict.items():
             if filtro in datos['nombre'].lower():
                 self.lista_clientes.Append(f"{datos['nombre']} ({datos['tel']})")
-    def seleccionar_cliente(self, event):
+
+        if self.lista_clientes.GetCount() > 0:
+            if seleccion_anterior == wx.NOT_FOUND:
+                self.lista_clientes.SetSelection(0)  # Solo si antes no había selección
+            self.lista_clientes.SetFocus()  # Mantiene la navegación con teclas
+
+    def seleccionar_cliente(self, event=None):
+        """Selecciona el cliente y devuelve el foco al campo de texto."""
         seleccion = self.lista_clientes.GetStringSelection()
         if seleccion:
-            self.txt_cliente.SetValue(seleccion.split(' (')[0])
-            self.lista_clientes.Clear()
+            self.txt_cliente.SetValue(seleccion.split(' (')[0])  # Guarda solo el nombre
+            self.txt_cliente.SetFocus()  # Vuelve al campo de texto
+            self.lista_clientes.Hide()  # Oculta la lista solo después de seleccionar
 
+    def on_key_cliente(self, event):
+        """Permite movernos con las flechas y seleccionar con Enter."""
+        keycode = event.GetKeyCode()
+        index = self.lista_clientes.GetSelection()
+        total_clientes = self.lista_clientes.GetCount()
+
+        if keycode == wx.WXK_RETURN:  # Enter para seleccionar el cliente
+            if total_clientes > 0:
+                self.seleccionar_cliente()
+        elif keycode == wx.WXK_DOWN:  # Mover hacia abajo en la lista
+            if index < total_clientes - 1:
+                self.lista_clientes.SetSelection(index + 1)
+                self.anunciar_seleccion()
+        elif keycode == wx.WXK_UP:  # Mover hacia arriba en la lista
+            if index > 0:
+                self.lista_clientes.SetSelection(index - 1)
+                self.anunciar_seleccion()
+        else:
+            event.Skip()  # Permite otros eventos del teclado
+
+    def anunciar_seleccion(self):
+        """Fuerza la lectura de la selección en lectores de pantalla."""
+        seleccion = self.lista_clientes.GetStringSelection()
+        if seleccion:
+            wx.CallAfter(self.lista_clientes.SetLabel, seleccion)
 
     def cargar_productos(self):
-        productos_lista = gestion_productos.obtener_todos()
-        self.productos_dict = {datos["nombre"]: datos for datos in productos_lista.values()}
-        return self.productos_dict
+        try:
+            if not os.path.exists(self.nombre_archivo_productos):
+                wx.MessageBox(f"El archivo {self.nombre_archivo_productos} no se encuentra.", "Error", wx.OK | wx.ICON_ERROR)
+                return {}
+            with open(self.nombre_archivo_productos, 'r') as archivo:
+                productos_lista = json.load(archivo)
+                # Convertir la lista a un diccionario usando los IDs como claves
+                productos_dict = {str(producto["id"]): producto for producto in productos_lista}
+                return productos_dict
+        except FileNotFoundError:
+            return {}  # Si no existe el archivo, retorna un diccionario vacío
+
+
+
 
     def actualizar_lista_productos(self, filtro=""):
         self.list_productos.Clear()
-        for nombre, datos in self.productos_dict.items():
-            if filtro.lower() in nombre.lower():
-                item_text = f"{nombre} - Stock: {datos['stock']} - Precio: ${datos['precio']}"
+        for producto in self.productos_dict.values():
+            if filtro.lower() in producto["nombre"].lower():  # Busca en el nombre del producto
+                item_text = f"ID: {producto['id']} - {producto['nombre']} - Stock: {producto['stock']} - Precio: ${producto['precio']}"
                 self.list_productos.Append(item_text)
+
+
 
     def filtrar_productos(self, event):
         filtro = self.txt_buscar_producto.GetValue()
@@ -260,21 +337,41 @@ class AgregarVentaDialog(wx.Dialog):
         else:
             event.Skip()
 
+
+
+
     def guardar_venta(self, event):
         cliente = self.txt_cliente.GetValue().strip()
+        
         if not cliente or not self.productos_seleccionados:
             wx.MessageBox("Debe ingresar un cliente y al menos un producto", "Error", wx.OK | wx.ICON_ERROR)
             return
 
         productos_ids = []
-        total_venta = 0  # Variable para almacenar el total de la venta
+        total_venta = 0  # Inicializar total de la venta
+
         for producto_str in self.productos_seleccionados:
-            nombre_producto = producto_str.split(" - ")[0]
-            datos_producto = self.productos_dict.get(nombre_producto)
-            
-            if datos_producto:
-                productos_ids.append(datos_producto["id"])
-                total_venta += float(datos_producto["precio"])  # Sumar precio del producto
-        gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict,total_venta)
-        wx.MessageBox("Venta registrada con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
+            match = re.search(r"ID:\s*(\d+)", producto_str)  # Captura "ID: número"
+            if match:
+                producto_id = int(match.group(1))  # Convertir ID a entero
+
+                # Buscar el producto en self.productos_dict
+                datos_producto = next((p for p in self.productos_dict.values() if p["id"] == producto_id), None)
+                
+                if datos_producto:
+                    productos_ids.append(producto_id)
+                    total_venta += float(datos_producto["precio"])  # Sumar el precio del producto
+                else:
+                    print(f"⚠️ Error: Producto con ID {producto_id} no encontrado en productos_dict.")
+            else:
+                print(f"⚠️ Error: No se pudo extraer el ID del producto de '{producto_str}'")
+
+        if not productos_ids:
+            wx.MessageBox("No se pudieron registrar los productos correctamente.", "Error", wx.OK | wx.ICON_ERROR)
+            return
+
+        # Registrar la venta con los productos correctos
+        gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict, total_venta)
+
+        wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
         self.EndModal(wx.ID_OK)

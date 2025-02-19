@@ -34,21 +34,42 @@ class GestionClientes:
         print(f"Cliente registrado: {cliente_dict}")
         return nuevo_cliente
 
-    def editar_cliente(self, id_cliente, nombre=None, dire=None, tel=None):
-        """Edita los datos de un cliente dado su ID."""
-        for cliente in self.clientes:
-            if cliente["id"] == id_cliente:
-                if nombre:
-                    cliente["nombre"] = nombre
-                if dire:
-                    cliente["dire"] = dire
-                if tel:
-                    cliente["tel"] = tel
-                self.guardar_datos()
-                print(f"Cliente con ID {id_cliente} actualizado.")
-                return True
-        print(f"Cliente con ID {id_cliente} no encontrado.")
-        return False
+    def editar_cliente(self, id, nombre=None, tel=None, dire=None):
+        print(f"🔹 ID recibido: {id}, tipo: {type(id)}")
+    
+        # Convertir ID a entero si es necesario
+        try:
+            id = int(id)
+        except ValueError:
+            print(f"❌ Error: ID {id} no es un número válido")
+            return
+
+        # Verificar el tipo de self.clientes
+        if not isinstance(self.clientes, list):
+            print("⚠️ Error: self.clientes no es una lista")
+            return
+
+        # Buscar el cliente por ID dentro de la lista
+        cliente = next((c for c in self.clientes if c["id"] == id), None)
+
+        if not cliente:
+            print(f"❌ Error: Cliente con ID {id} no encontrado")
+            return
+
+        print(f"📊 Datos actuales del cliente {id}: {cliente}")
+
+        # Actualización de datos
+        if nombre:
+            cliente["nombre"] = nombre
+        if tel:
+            cliente["tel"] = tel
+        if dire:
+            cliente["dire"] = dire
+
+        print(f"✅ Datos actualizados del cliente {id}: {cliente}")
+
+        # Guardar cambios
+        self.guardar_datos()
 
     def obtener_todos(self):
         """Devuelve todos los clientes como un diccionario indexado."""

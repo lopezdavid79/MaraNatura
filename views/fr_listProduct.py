@@ -40,25 +40,37 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
         productos = gestion_productos.obtener_todos()
 
-        for id_producto, datos in productos.items():
+        # Recorre la lista de productos
+        for producto in productos:
+            # Extrae el id y los datos del producto
+            id_producto = producto["id"]
+            datos = producto  # Todo el diccionario del producto
+            
+            # Inserta el producto en la lista de control
             index = self.list_ctrl.InsertItem(self.list_ctrl.GetItemCount(), str(id_producto))
             self.list_ctrl.SetItem(index, 1, datos["nombre"])
             self.list_ctrl.SetItem(index, 2, str(datos["stock"]))
             self.list_ctrl.SetItem(index, 3, str(datos["precio"]))
-    
+
     def mostrar_detalle_producto(self, event):
         index = event.GetIndex()
-        id_producto = self.list_ctrl.GetItemText(index)
+        id_producto = int(self.list_ctrl.GetItemText(index))  # Convierte el ID a entero
 
         # Obtener los detalles del producto
         productos = gestion_productos.obtener_todos()
-        if id_producto in productos:
-            datos = productos[id_producto]
-            dialogo = DetalleProductoDialog(self, id_producto, datos)
+        
+        # Buscar el producto por ID en la lista
+        producto = next((p for p in productos if p["id"] == id_producto), None)
+
+        if producto:
+            dialogo = DetalleProductoDialog(self, id_producto, producto)
             dialogo.ShowModal()
             dialogo.Destroy()
             self.cargar_productos()  # Actualizar la lista después de la edición
-    
+        else:
+            print(f"❌ Error: Producto con ID {id_producto} no encontrado")
+
+
     def abrir_dialogo_nuevo(self, event):
         producto_form = VentanaProducto(self, id=None, title="Nuevo Producto")  # self es el padre de la ventana
         producto_form.Show()  # Mostrar el formulario         
