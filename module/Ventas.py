@@ -59,6 +59,7 @@ class GestionVentas:
         with open(self.nombre_archivo, 'w') as archivo:
             json.dump(self.ventas, archivo, indent=4)
 
+
     def registrar_venta(self, fecha, cliente, productos_ids, productos_dict, total_venta):
         nuevo_id = len(self.ventas) + 1  # Asigna el siguiente ID disponible
         nueva_venta = Venta(nuevo_id, fecha, cliente, productos_ids)
@@ -73,12 +74,24 @@ class GestionVentas:
         # Guardar los cambios de la venta en persistencia
         self.guardar_datos()
 
-        # Actualizar el stock de los productos vendidos
+            # **Actualizar stock**
+        self.actualizar_stock(productos_ids, productos_dict)
+
+        #print(f"Venta guardada: {venta_dict}")  # Imprime la venta registrada para debug
+        return nueva_venta
+
+    def actualizar_stock(self, productos_ids, productos_dict):
+        """Método separado para actualizar el stock de los productos vendidos."""
+        print("\n🔍 [DEPURACIÓN] Estructura de productos_dict antes de actualizar:")
+        print(json.dumps(productos_dict, indent=4, ensure_ascii=False))  # Imprime bien formateado
         for producto_id in productos_ids:
-            producto_data = productos_dict.get(producto_id)  # Obtén los datos del producto
-            
+            producto_id_str = str(producto_id)  # Convertimos explícitamente a string
+            print(f"\n🔎 Buscando producto ID: {producto_id} (tipo: {type(producto_id_str)})")
+            producto_data = productos_dict.get(producto_id_str)  # Obtén los datos del producto
+            print(producto_data)
+                    
             if producto_data:
-                # Verificar si el stock es suficiente
+                        #Verificar si el stock es suficiente
                 if producto_data['stock'] > 0:
                     producto_data['stock'] -= 1  # Restamos uno al stock
                     productos_dict[producto_id] = producto_data  # Actualiza el diccionario con el nuevo stock
@@ -86,14 +99,29 @@ class GestionVentas:
                     print(f"Stock insuficiente para el producto ID: {producto_id}")
             else:
                 print(f"Producto con ID: {producto_id} no encontrado.")
-        
+        print("\n🔍 [DEPURACIÓN] Estado final del stock antes de guardar:")
+        for producto_id in productos_ids:
+            producto_data = productos_dict.get(str(producto_id))
+            if producto_data:
+                print(f"  - Producto {producto_id}: Stock después de la venta -> {producto_data['stock']}")
+
         # Guardamos los productos con el stock actualizado en el archivo JSON
-        gestion_productos.guardar_datos()
+        self.guardar_datos_productos(productos_dict)  # Llamada al método para guardar los productos
 
-        print(f"Venta guardada: {venta_dict}")  # Imprime la venta registrada para debug
-        return nueva_venta
+    
 
+    def guardar_datos_productos(self, productos_dict):
+        """Guarda la información de productos en formato JSON como una lista."""
+        try:
+            # Convertir el diccionario de productos en una lista de objetos
+            productos_lista = list(productos_dict.values())  
 
+            with open('data/productos.json', 'w', encoding='utf-8') as archivo:
+                json.dump(productos_lista, archivo, indent=4, ensure_ascii=False)
+
+            print("Datos de productos guardados correctamente.")
+        except Exception as e:
+            print(f"Error al guardar los productos: {e}")
 
     def obtener_todos(self):
         return {str(index + 1): venta for index, venta in enumerate(self.ventas)}

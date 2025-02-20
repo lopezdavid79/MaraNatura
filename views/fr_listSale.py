@@ -371,6 +371,8 @@ class AgregarVentaDialog(wx.Dialog):
             return
 
         # Registrar la venta con los productos correctos
+        #print(f"Tipo de self.productos_dict: {type(self.productos_dict)}")
+        #print(f"Contenido de self.productos_dict: {self.productos_dict}")
         gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict, total_venta)
 
         wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)

@@ -7,14 +7,26 @@
     },
     {
         "id": 911,
-        "nombre": "todod\u00eda fMacadamia 400",
+        "nombre": "tododía fMacadamia 400",
         "stock": 10,
         "precio": 10000.0
     },
     {
         "id": 1122,
-        "nombre": "todod\u00eda frutas rojas 400",
+        "nombre": "tododía frutas rojas 400",
         "stock": 10,
         "precio": 13900.0
+    },
+    {
+        "id": 914,
+        "nombre": "Jabones Nature ",
+        "stock": 9,
+        "precio": 6000.0
+    },
+    {
+        "id": 914,
+        "nombre": "Jabones Nature ",
+        "stock": 9,
+        "precio": 6000.0
     }
 ]
