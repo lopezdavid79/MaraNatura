@@ -126,34 +126,39 @@ class EditarProductoDialog(wx.Dialog):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         productos = gestion_productos.obtener_todos()
-        datos = productos.get(id_producto, {})
+        # Buscar el producto por ID en la lista
+        producto = next((p for p in productos if p["id"] == id_producto), {})
 
-        # Campos editables
-        vbox.Add(wx.StaticText(panel, label="Nombre:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_nombre = wx.TextCtrl(panel, value=datos.get("nombre", ""))
-        vbox.Add(self.txt_nombre, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+        # Si el producto existe, cargamos sus datos
+        if producto:
+            # Campos editables
+            vbox.Add(wx.StaticText(panel, label="Nombre:"), flag=wx.LEFT | wx.TOP, border=10)
+            self.txt_nombre = wx.TextCtrl(panel, value=producto.get("nombre", ""))
+            vbox.Add(self.txt_nombre, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
-        vbox.Add(wx.StaticText(panel, label="Stock:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_stock = wx.TextCtrl(panel, value=str(datos.get("stock", "")))
-        vbox.Add(self.txt_stock, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+            vbox.Add(wx.StaticText(panel, label="Stock:"), flag=wx.LEFT | wx.TOP, border=10)
+            self.txt_stock = wx.TextCtrl(panel, value=str(producto.get("stock", "")))
+            vbox.Add(self.txt_stock, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
-        vbox.Add(wx.StaticText(panel, label="Precio:"), flag=wx.LEFT | wx.TOP, border=10)
-        self.txt_precio = wx.TextCtrl(panel, value=str(datos.get("precio", "")))
-        vbox.Add(self.txt_precio, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+            vbox.Add(wx.StaticText(panel, label="Precio:"), flag=wx.LEFT | wx.TOP, border=10)
+            self.txt_precio = wx.TextCtrl(panel, value=str(producto.get("precio", "")))
+            vbox.Add(self.txt_precio, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
-        # Botones
-        hbox = wx.BoxSizer(wx.HORIZONTAL)
-        btn_ok = wx.Button(panel, wx.ID_OK, "Guardar")
-        btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
-        hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
-        hbox.Add(btn_cancel)
+            # Botones
+            hbox = wx.BoxSizer(wx.HORIZONTAL)
+            btn_ok = wx.Button(panel, wx.ID_OK, "Guardar")
+            btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
+            hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
+            hbox.Add(btn_cancel)
 
-        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
+            vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
 
-        panel.SetSizer(vbox)
+            panel.SetSizer(vbox)
 
-        # Bind para el botón "Guardar"
-        self.Bind(wx.EVT_BUTTON, self.guardar_cambios, btn_ok)
+            # Bind para el botón "Guardar"
+            self.Bind(wx.EVT_BUTTON, self.guardar_cambios, btn_ok)
+        else:
+            wx.MessageBox(f"No se encontró el producto con ID {id_producto}", "Error", wx.OK | wx.ICON_ERROR)
 
     def guardar_cambios(self, event):
         nombre = self.txt_nombre.GetValue()

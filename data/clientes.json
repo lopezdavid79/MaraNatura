@@ -1,32 +1,14 @@
 [
     {
         "id": 1,
-        "nombre": "david lopez",
-        "dire": "libertad 432",
-        "tel": "3534294632"
+        "nombre": "Patricia Sosa",
+        "dire": "Chaco 223",
+        "tel": "3534299878"
     },
     {
         "id": 2,
-        "nombre": "Mara Debora Schonfeld",
-        "dire": "combatientes de malvinas 432",
-        "tel": "3532432667"
-    },
-    {
-        "id": 3,
-        "nombre": "Andrea Perez",
-        "dire": "San Pedro 112",
-        "tel": "3553433989"
-    },
-    {
-        "id": 4,
-        "nombre": "Eric Pereira",
-        "dire": "Int. Fasolis 233",
-        "tel": "3535989323"
-    },
-    {
-        "id": 5,
-        "nombre": "maría Jòse villarreal",
-        "dire": "catamarca 1544",
-        "tel": "3534232567"
+        "nombre": "Natalia Perez",
+        "dire": "Jujuy  222",
+        "tel": "3534299898"
     }
 ]

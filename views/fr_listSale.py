@@ -266,14 +266,23 @@ class AgregarVentaDialog(wx.Dialog):
             if not os.path.exists(self.nombre_archivo_productos):
                 wx.MessageBox(f"El archivo {self.nombre_archivo_productos} no se encuentra.", "Error", wx.OK | wx.ICON_ERROR)
                 return {}
-            with open(self.nombre_archivo_productos, 'r') as archivo:
-                productos_lista = json.load(archivo)
-                # Convertir la lista a un diccionario usando los IDs como claves
-                productos_dict = {str(producto["id"]): producto for producto in productos_lista}
-                return productos_dict
-        except FileNotFoundError:
-            return {}  # Si no existe el archivo, retorna un diccionario vacío
 
+            with open(self.nombre_archivo_productos, 'r') as archivo:
+                try:
+                    #productos_lista = json.load(archivo)
+                    productos_dict = json.load(archivo)  # El archivo ya es un diccionario
+                    print("Contenido de productos_dict:", productos_dict)  # Depuración
+                    
+                    return productos_dict
+                except (TypeError, KeyError) as e:
+                    wx.MessageBox(f"Error al cargar productos: Formato JSON incorrecto. {e}", "Error", wx.OK | wx.ICON_ERROR)
+                    return {}
+                except json.JSONDecodeError as e:
+                    wx.MessageBox(f"Error al decodificar JSON: {e}", "Error", wx.OK | wx.ICON_ERROR)
+                    return {}
+        except Exception as e:
+            wx.MessageBox(f"Error inesperado al cargar productos: {e}", "Error", wx.OK | wx.ICON_ERROR)
+            return {}
 
 
 

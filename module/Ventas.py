@@ -1,64 +1,40 @@
 import json
-from datetime import datetime  # Importa el módulo datetime
-from module.Productos import Producto  # Importa la clase Producto
-from module.GestionProducto import GestionProductos
-gestion_productos =GestionProductos()
+from datetime import datetime
+
 class Venta:
-    def __init__(self, id, fecha,cliente, productos):
+    def __init__(self, id, fecha, cliente, productos):
         self.id = id
         self.fecha = fecha or datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         self.cliente = cliente
-        self.productos = productos  # Lis   ta de IDs de productos vendidos
-        
-
-
-    def calcular_total(self, productos_dict):
-
-        
-        #print(f"Diccionario recibido con {len(productos_dict)} elementos: {productos_dict}")
-        total = 0
-        for producto_id in self.productos:
-            print(f"Tipo de producto_id: {type(producto_id)}")
-        # Verificar si el producto_id existe en productos_dict
-            if producto_id not in productos_dict:
-                print(f"Advertencia: Producto con ID {producto_id} no encontrado en el diccionario.")
-                continue  # Salta al siguiente producto si no se encuentra en el diccionario
-
-            
-            producto = productos_dict.get(producto_id)  # Obtén los datos del producto
-        
-            if producto:
-                # Verifica que el producto tiene la clave "precio"
-                if "precio" in producto:
-                    precio_producto = producto["precio"]  # Accede al precio del producto
-                    print(f"Producto ID: {producto_id}, Precio: {precio_producto}")  # Depuración: Verificar el precio
-                    total += precio_producto  # Sumar el precio al total
-                else:
-                    print(f"Advertencia: El producto con ID {producto_id} no tiene la clave 'precio'.")
-            else:
-                print(f"Error: No se pudo obtener el producto con ID {producto_id}.")
-    
-        print(f"Total calculado: {total}")  # Depuración: Verificar el total calculado
-        return total
+        self.productos = productos
 
 class GestionVentas:
-    def __init__(self, nombre_archivo='data/ventas.json'): #ruta relativa a la carpeta datadef __init__(self, nombre_archivo='data/ventas.json'): #ruta relativa a la carpeta data
-        self.nombre_archivo = nombre_archivo
-        self.ventas = self.cargar_datos()
-        if not isinstance(self.ventas, list): #verifica si self.ventas es una lista
-            self.ventas = [] # si no lo es inicializala como una lista
+    def __init__(self, nombre_archivo_ventas='data/ventas.json', nombre_archivo_productos='data/productos.json'):
+        self.nombre_archivo_ventas = nombre_archivo_ventas
+        self.nombre_archivo_productos = nombre_archivo_productos
+        self.ventas = self.cargar_datos(self.nombre_archivo_ventas)
+        self.productos = self.cargar_datos(self.nombre_archivo_productos)
+        self.id_counter = self.get_next_id()
 
-    def cargar_datos(self):
+    def cargar_datos(self, nombre_archivo_ventas):
         try:
-            with open(self.nombre_archivo, 'r') as archivo:
+            with open(nombre_archivo_ventas, 'r', encoding='utf-8') as archivo:
                 return json.load(archivo)
-        except FileNotFoundError:
-            return []  # Devuelve una lista vacía si el archivo no existe
+        except (FileNotFoundError, json.JSONDecodeError):
+            return []  # Retorna una lista vacía en caso de error
+
 
     def guardar_datos(self):
-        with open(self.nombre_archivo, 'w') as archivo:
-            json.dump(self.ventas, archivo, indent=4)
+        try:
+            with open(self.nombre_archivo_ventas, 'w', encoding='utf-8') as archivo:
+                json.dump(self.ventas, archivo, indent=4, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error al guardar datos en : ")  # Asegúrate de descomentar esta línea
 
+    def get_next_id(self):
+        if self.ventas and isinstance(self.ventas, list):
+            return max((venta.get('id', 0) for venta in self.ventas), default=0) + 1
+        return 1
 
     def registrar_venta(self, fecha, cliente, productos_ids, productos_dict, total_venta):
         nuevo_id = len(self.ventas) + 1  # Asigna el siguiente ID disponible
@@ -80,48 +56,32 @@ class GestionVentas:
         #print(f"Venta guardada: {venta_dict}")  # Imprime la venta registrada para debug
         return nueva_venta
 
+
     def actualizar_stock(self, productos_ids, productos_dict):
-        """Método separado para actualizar el stock de los productos vendidos."""
-        print("\n🔍 [DEPURACIÓN] Estructura de productos_dict antes de actualizar:")
-        print(json.dumps(productos_dict, indent=4, ensure_ascii=False))  # Imprime bien formateado
         for producto_id in productos_ids:
-            producto_id_str = str(producto_id)  # Convertimos explícitamente a string
-            print(f"\n🔎 Buscando producto ID: {producto_id} (tipo: {type(producto_id_str)})")
-            producto_data = productos_dict.get(producto_id_str)  # Obtén los datos del producto
-            print(producto_data)
-                    
-            if producto_data:
-                        #Verificar si el stock es suficiente
+            producto_id_str = str(producto_id)  # Asegura que sea string para evitar errores
+
+            if producto_id_str in productos_dict:
+                producto_data = productos_dict[producto_id_str]
+            
                 if producto_data['stock'] > 0:
-                    producto_data['stock'] -= 1  # Restamos uno al stock
-                    productos_dict[producto_id] = producto_data  # Actualiza el diccionario con el nuevo stock
+                    producto_data['stock'] -= 1
+                    print(f"Stock actualizado para {producto_data['nombre']}: {producto_data['stock']} unidades restantes.")
                 else:
-                    print(f"Stock insuficiente para el producto ID: {producto_id}")
+                    print(f"Stock insuficiente para el producto: {producto_data['nombre']}")
             else:
-                print(f"Producto con ID: {producto_id} no encontrado.")
-        print("\n🔍 [DEPURACIÓN] Estado final del stock antes de guardar:")
-        for producto_id in productos_ids:
-            producto_data = productos_dict.get(str(producto_id))
-            if producto_data:
-                print(f"  - Producto {producto_id}: Stock después de la venta -> {producto_data['stock']}")
+                print(f"Producto no encontrado con ID: {producto_id}")
 
-        # Guardamos los productos con el stock actualizado en el archivo JSON
-        self.guardar_datos_productos(productos_dict)  # Llamada al método para guardar los productos
+        self.guardar_productos(productos_dict)  # Guardar cambios en el archivo JSON
 
-    
-
-    def guardar_datos_productos(self, productos_dict):
-        """Guarda la información de productos en formato JSON como una lista."""
+    def guardar_productos(self, productos_dict):
         try:
-            # Convertir el diccionario de productos en una lista de objetos
-            productos_lista = list(productos_dict.values())  
-
-            with open('data/productos.json', 'w', encoding='utf-8') as archivo:
-                json.dump(productos_lista, archivo, indent=4, ensure_ascii=False)
-
-            print("Datos de productos guardados correctamente.")
+            with open(self.nombre_archivo_productos, 'w', encoding='utf-8') as archivo:
+                json.dump(productos_dict, archivo, indent=4, ensure_ascii=False)
+            print("Stock actualizado y guardado correctamente.")
         except Exception as e:
-            print(f"Error al guardar los productos: {e}")
+            print(f"Error al guardar productos: {e}")
+
 
     def obtener_todos(self):
         return {str(index + 1): venta for index, venta in enumerate(self.ventas)}
