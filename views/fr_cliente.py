@@ -1,4 +1,5 @@
 import wx
+import re
 from module.GestionCliente  import GestionClientes
 
 # Inicialización
@@ -15,8 +16,8 @@ class VentanaCliente(wx.Frame):
         panel = wx.Panel(self)
 
         # Etiquetas y campos de entrada
-        wx.StaticText(panel, label="ID:", pos=(10, 10))
-        self.txt_id = wx.TextCtrl(panel, pos=(100, 10))
+        #wx.StaticText(panel, label="ID:", pos=(10, 10))
+        #self.txt_id = wx.TextCtrl(panel, pos=(100, 10))
 
         wx.StaticText(panel, label="Nombre:", pos=(10, 40))
         self.txt_nombre = wx.TextCtrl(panel, pos=(100, 40))
@@ -41,7 +42,8 @@ class VentanaCliente(wx.Frame):
         self.Show()
 
     def guardar_cliente(self, event):
-        id_cliente = self.txt_id.GetValue()
+        #id_cliente = self.txt_id.GetValue()
+        id_cliente = max([c["id"] for c in gestion_clientes.clientes], default=0) + 1
         nombre = self.txt_nombre.GetValue()
         direccion = self.txt_direccion.GetValue()
         telefono = self.txt_telefono.GetValue()
@@ -49,6 +51,13 @@ class VentanaCliente(wx.Frame):
         # Validación de campos obligatorios
         if not id_cliente or not nombre or not direccion or not telefono:
             self.mostrar_mensaje("Error: Todos los campos son obligatorios.")
+            return
+        # Validación del nombre (solo letras, espacios y acentos)
+        if not re.match("^[A-Za-zÁÉÍÓÚáéíóúñÑ ]+$", nombre):
+            self.mostrar_mensaje("Error: El nombre solo puede contener letras, acentos y espacios.")
+            return
+        if not telefono.isdigit() or len(telefono) != 10:
+            self.mostrar_mensaje("Error: El teléfono debe contener solo números y tener exactamente 10 dígitos.")
             return
 
         try:
