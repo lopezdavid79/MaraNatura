@@ -73,7 +73,7 @@ class VentanaProducto(wx.Frame):
         gestion_productos.agregar_producto(id_producto, nombre, stock, precio)
 
         print(f"Producto guardado: ID={id_producto}, Producto={nombre}, Stock={stock}, Precio={precio}")  # Usa 'nombre' en lugar de 'nombre_producto'
-        self.mostrar_mensaje("Producto guardado con éxito.")
+        wx.MessageBox(f"Venta registrada con éxito. ", "Éxito", wx.OK | wx.ICON_INFORMATION)
 
         # Limpiar campos
         self.txt_id.SetValue("")

@@ -98,7 +98,9 @@ class DetalleClienteDialog(wx.Dialog):
         # Botón para editar
         btn_editar = wx.Button(panel, label="Editar")
         btn_editar.Bind(wx.EVT_BUTTON, self.editar_cliente)
-
+#eliminar cliente
+        btn_delete = wx.Button(panel, label="Eliminar")
+        btn_delete.Bind(wx.EVT_BUTTON, self.eliminar_cliente)
         # Botón para cerrar
         btn_cerrar = wx.Button(panel, wx.ID_CANCEL, "Cerrar")
 
@@ -115,6 +117,11 @@ class DetalleClienteDialog(wx.Dialog):
         if dialogo.ShowModal() == wx.ID_OK:
             self.EndModal(wx.ID_OK)  # Cierra el diálogo y recarga la lista
         dialogo.Destroy()
+    def eliminar_cliente(self, event):
+            dialogo = EliminarClienteDialog(self, self.id_cliente,gestion_clientes)
+            if dialogo.ShowModal() == wx.ID_OK:
+                self.EndModal(wx.ID_OK)  # Cierra el diálogo y recarga la lista
+            dialogo.Destroy()
 
 
 class EditarClienteDialog(wx.Dialog):
@@ -168,5 +175,51 @@ class EditarClienteDialog(wx.Dialog):
             gestion_clientes.editar_cliente(self.id_cliente, nombre, tel, dire)
             wx.MessageBox("Cliente actualizado con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
             self.EndModal(wx.ID_OK)
+        except Exception as e:
+            wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)
+
+
+#eliminar cliente
+#eliminar cliente
+class EliminarClienteDialog(wx.Dialog):
+    def __init__(self, parent, id_cliente, gestion_clientes):
+        super().__init__(parent, title="Eliminar Cliente", size=(300, 150))
+        self.id_cliente = id_cliente
+        self.parent = parent  # Guardamos la referencia al padre para actualizar la lista
+        self.gestion_clientes = gestion_clientes  # Guardamos la referencia a la gestión de clientes
+
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        clientes = self.gestion_clientes.obtener_todos()
+        #print(type(clientes), clientes)
+        cliente = clientes.get(str(id_cliente))  # Convertimos id_cliente a string por seguridad
+        #cliente = next((c for c in clientes if c["id"] == id_cliente), None)
+
+        if cliente:
+            mensaje = f"¿Estás seguro de que deseas eliminar al cliente '{cliente['nombre']}'?"
+            vbox.Add(wx.StaticText(panel, label=mensaje), flag=wx.ALL, border=10)
+            
+            hbox = wx.BoxSizer(wx.HORIZONTAL)
+            btn_ok = wx.Button(panel, wx.ID_OK, "Eliminar")
+            btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
+            hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
+            hbox.Add(btn_cancel)
+            
+            vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
+            panel.SetSizer(vbox)
+            
+            self.Bind(wx.EVT_BUTTON, self.eliminar_cliente, btn_ok)
+        else:
+            wx.MessageBox(f"No se encontró el cliente con ID {id_cliente}", "Error", wx.OK | wx.ICON_ERROR)
+            self.EndModal(wx.ID_CANCEL)
+
+    def eliminar_cliente(self, event):
+        try:
+            self.gestion_clientes.eliminar_cliente(self.id_cliente)
+            wx.MessageBox("Cliente eliminado con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
+            self.EndModal(wx.ID_OK)
+            if hasattr(self.parent, "cargar_clientes"):
+                self.parent.cargar_clientes()  # Actualizar la lista de clientes en la ventana principal
         except Exception as e:
             wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)

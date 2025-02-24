@@ -83,27 +83,21 @@ class GestionClientes:
                 return cliente
         return None  # Devuelve None si no se encuentra
 
+    """Elimina un cliente por su ID en una lista de diccionarios."""
     def eliminar_cliente(self, id_cliente):
-        """Elimina un cliente por su ID."""
-        cliente = self.buscar_cliente(id_cliente)
+        print(f"Tipo de self.clientes: {type(self.clientes)}")
+        print(f"Clientes actuales: {self.clientes}")
+        
+        id_cliente = int(id_cliente)  # Convertir a entero porque los IDs en la lista parecen ser enteros
+        
+        # Buscar el cliente en la lista
+        cliente = next((c for c in self.clientes if c["id"] == id_cliente), None)
+
         if cliente:
-            self.clientes.remove(cliente)
+            self.clientes.remove(cliente)  # Eliminar cliente de la lista
             self.guardar_datos()
             print(f"Cliente con ID {id_cliente} eliminado.")
             return True
+
         print(f"Cliente con ID {id_cliente} no encontrado.")
         return False
-
-
-# Ejemplo de uso
-if __name__ == "__main__":
-    gestion_clientes = GestionClientes()
-
-    # Obtener todos los clientes
-    print("Lista de clientes:", gestion_clientes.obtener_todos())
-
-    # Buscar un cliente
-    cliente = gestion_clientes.buscar_cliente(1)
-    print("Cliente encontrado:", cliente)
-
-    

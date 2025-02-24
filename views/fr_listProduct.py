@@ -32,15 +32,21 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         
         # Botón para cerrar
         btn_cerrar = wx.Button(panel, label="Cerrar", pos=(300, 300))
-        btn_cerrar.Bind(wx.EVT_BUTTON, self.cerrar_ventana)
-        
+        btn_cerrar.Bind(wx.EVT_BUTTON, self.on_close)
+        #boton para actualizar 
+        btn_actual= wx.Button(panel, label="Actualizar", pos=(150, 300))
+        btn_actual.Bind(wx.EVT_BUTTON, self.actualizar_lista_productos)
         self.Show()
     
     def cargar_productos(self):
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
         productos = gestion_productos.obtener_todos()
+        print("Productos obtenidos:", productos)  # 🛠️ Depuración
 
-        # Recorre la lista de productos
+        if not isinstance(productos, list):  # Evitar errores si devuelve otra cosa
+            print("❌ Error: `obtener_todos()` no devolvió una lista")
+            return
+            # Recorre la lista de productos
         for producto in productos:
             # Extrae el id y los datos del producto
             id_producto = producto["id"]
@@ -71,16 +77,26 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             print(f"❌ Error: Producto con ID {id_producto} no encontrado")
 
 
+
     def abrir_dialogo_nuevo(self, event):
         producto_form = VentanaProducto(self, id=None, title="Nuevo Producto")  # self es el padre de la ventana
+        producto_form.Bind(wx.EVT_CLOSE, self.cerrar_ventana)  # Detectar cierre
         producto_form.Show()  # Mostrar el formulario         
-        self.cargar_productos()  # Actualiza la lista después de agregar un producto
-
 
     def cerrar_ventana(self, event):
+        print("Producto agregado, actualizando lista...")
+        self.cargar_productos()
+        event.Skip()  # Permitir que la ventana se cierre normalmente
+
+    def actualizar_lista_productos(self,event):
+        self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
+        self.cargar_productos()   #Vuelve a cargar los productos del archivo JSON        
+        #print("Productos obtenidos:", productos)  # 🛠️ Depuración
+        
+            
+    def on_close(self, event):
         self.Close()
-
-
+                
 class DetalleProductoDialog(wx.Dialog):
     def __init__(self, parent, id_producto, datos):
         super().__init__(parent, title="Detalle del Producto", size=(300, 250))
@@ -98,12 +114,15 @@ class DetalleProductoDialog(wx.Dialog):
         # Botón para editar
         btn_editar = wx.Button(panel, label="Editar")
         btn_editar.Bind(wx.EVT_BUTTON, self.editar_producto)
-
+#boton para eliminar 
+        btn_delete = wx.Button(panel, label="Eliminar")
+        btn_delete.Bind(wx.EVT_BUTTON, self.eliminar_producto)
         # Botón para cerrar
         btn_cerrar = wx.Button(panel, wx.ID_CANCEL, "Cerrar")
 
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         hbox.Add(btn_editar, flag=wx.RIGHT, border=10)
+        hbox.Add(btn_delete, flag=wx.RIGHT, border=10)
         hbox.Add(btn_cerrar)
 
         vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
@@ -115,6 +134,15 @@ class DetalleProductoDialog(wx.Dialog):
         if dialogo.ShowModal() == wx.ID_OK:
             self.EndModal(wx.ID_OK)  # Cierra el diálogo y recarga la lista
         dialogo.Destroy()
+
+
+
+    def eliminar_producto(self, event):
+            dialogo = EliminarProductoDialog(self, self.id_producto,gestion_productos)
+            if dialogo.ShowModal() == wx.ID_OK:
+                self.EndModal(wx.ID_OK)  # Cierra el diálogo y recarga la lista
+            dialogo.Destroy()
+
 
 
 class EditarProductoDialog(wx.Dialog):
@@ -177,5 +205,49 @@ class EditarProductoDialog(wx.Dialog):
             self.EndModal(wx.ID_OK)
         except ValueError:
             wx.MessageBox("Stock debe ser un número entero y precio un número válido", "Error", wx.OK | wx.ICON_ERROR)
+        except Exception as e:
+            wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)
+
+
+
+#eliminar producto
+class EliminarProductoDialog(wx.Dialog):
+    def __init__(self, parent, id_producto, gestion_productos):
+        super().__init__(parent, title="Eliminar Producto", size=(300, 150))
+        self.id_producto = id_producto
+        self.parent = parent  # Guardamos la referencia al padre para actualizar la lista
+        self.gestion_productos = gestion_productos  # Guardamos la referencia a la gestión de productos
+
+        panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        productos = self.gestion_productos.obtener_todos()
+        producto = next((p for p in productos if p["id"] == id_producto), None)
+
+        if producto:
+            mensaje = f"¿Estás seguro de que deseas eliminar el producto '{producto['nombre']}'?"
+            vbox.Add(wx.StaticText(panel, label=mensaje), flag=wx.ALL, border=10)
+            
+            hbox = wx.BoxSizer(wx.HORIZONTAL)
+            btn_ok = wx.Button(panel, wx.ID_OK, "Eliminar")
+            btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
+            hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
+            hbox.Add(btn_cancel)
+            
+            vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.TOP | wx.BOTTOM, border=10)
+            panel.SetSizer(vbox)
+            
+            self.Bind(wx.EVT_BUTTON, self.eliminar_producto, btn_ok)
+        else:
+            wx.MessageBox(f"No se encontró el producto con ID {id_producto}", "Error", wx.OK | wx.ICON_ERROR)
+            self.EndModal(wx.ID_CANCEL)
+
+    def eliminar_producto(self, event):
+        try:
+            self.gestion_productos.eliminar_producto(self.id_producto)
+            wx.MessageBox("Producto eliminado con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
+            self.EndModal(wx.ID_OK)
+            if hasattr(self.parent, "cargar_productos"):
+                self.parent.cargar_productos()  # Actualizar la lista de productos en la ventana principal
         except Exception as e:
             wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)
