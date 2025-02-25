@@ -124,6 +124,7 @@ class DetalleProductoDialog(wx.Dialog):
         # Mostrar detalles
         vbox.Add(wx.StaticText(panel, label=f"ID: {id_producto}"), flag=wx.LEFT | wx.TOP, border=10)
         vbox.Add(wx.StaticText(panel, label=f"Nombre: {datos['nombre']}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Detalle: {datos['detalle']}"), flag=wx.LEFT | wx.TOP, border=10)
         vbox.Add(wx.StaticText(panel, label=f"Stock: {datos['stock']}"), flag=wx.LEFT | wx.TOP, border=10)
         vbox.Add(wx.StaticText(panel, label=f"Precio: {datos['precio']}"), flag=wx.LEFT | wx.TOP, border=10)
 
@@ -179,6 +180,10 @@ class EditarProductoDialog(wx.Dialog):
             vbox.Add(wx.StaticText(panel, label="Nombre:"), flag=wx.LEFT | wx.TOP, border=10)
             self.txt_nombre = wx.TextCtrl(panel, value=producto.get("nombre", ""))
             vbox.Add(self.txt_nombre, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+            
+            vbox.Add(wx.StaticText(panel, label="Detalle:"), flag=wx.LEFT | wx.TOP, border=10)
+            self.txt_detalle= wx.TextCtrl(panel, value=producto.get("detalle", ""))
+            vbox.Add(self.txt_detalle, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
             vbox.Add(wx.StaticText(panel, label="Stock:"), flag=wx.LEFT | wx.TOP, border=10)
             self.txt_stock = wx.TextCtrl(panel, value=str(producto.get("stock", "")))
@@ -206,17 +211,18 @@ class EditarProductoDialog(wx.Dialog):
 
     def guardar_cambios(self, event):
         nombre = self.txt_nombre.GetValue()
+        detalle= self.txt_detalle.GetValue()
         stock = self.txt_stock.GetValue()
         precio = self.txt_precio.GetValue()
 
-        if not nombre or not stock or not precio:
+        if not nombre or not detalle or not stock or not precio:
             wx.MessageBox("Todos los campos son obligatorios", "Error", wx.OK | wx.ICON_ERROR)
             return
 
         try:
             stock = int(stock)
             precio = float(precio)
-            gestion_productos.editar_producto(self.id_producto, nombre, stock, precio)
+            gestion_productos.editar_producto(self.id_producto, nombre,detalle,stock, precio)
             wx.MessageBox("Producto actualizado con éxito", "Éxito", wx.OK | wx.ICON_INFORMATION)
             self.EndModal(wx.ID_OK)
         except ValueError:

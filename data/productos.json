@@ -7,7 +7,7 @@
     },
     "911": {
         "id": 911,
-        "nombre": "Rolón sin olor ",
+        "nombre": "RolÃ³n sin olor ",
         "stock": 9,
         "precio": 4500.0
     },
@@ -19,8 +19,8 @@
     },
     "903": {
         "id": 903,
-        "nombre": "Bs Limón",
-        "stock": 9,
+        "nombre": "Bs LimÃ³n",
+        "stock": 8,
         "precio": 23000.0
     },
     "932": {
@@ -43,13 +43,20 @@
     },
     "803": {
         "id": 803,
-        "nombre": "Perfume Todo día",
+        "nombre": "Perfume Todo dÃ­a",
         "stock": 2,
         "precio": 43000.0
     },
     "981": {
         "id": 981,
         "nombre": "Bs Mango Rojo",
+        "stock": 9,
+        "precio": 23999.0
+    },
+    "833": {
+        "id": 833,
+        "nombre": "Bs Flor de liz",
+        "detalle": "floral sutil",
         "stock": 10,
         "precio": 23999.0
     }

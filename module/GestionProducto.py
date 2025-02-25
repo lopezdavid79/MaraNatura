@@ -6,17 +6,6 @@ class GestionProductos:
         self.nombre_archivo = nombre_archivo
         self.productos = self.cargar_datos()  # Cargar los productos al iniciar
 
-    def on_key_down(self, event):
-
-        key_code = event.GetKeyCode()
-        control_presionado = event.ControlDown()
-
-        if control_presionado and key_code == ord("G"):  # Ctrl + G
-            self.guardar_cliente(None)
-        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
-            self.cerrar_ventana(None)
-        event.Skip()  # Permitir que otros eventos se procesen
-
 
 
     def cargar_datos(self):
@@ -41,7 +30,7 @@ class GestionProductos:
         """Verifica si un producto con el ID dado existe en el diccionario."""
         return str(id) in self.productos
 
-    def agregar_producto(self, id, nombre, stock, precio):
+    def agregar_producto(self, id, nombre, detalle,stock, precio):
         id_str = str(id)  # Convertimos el ID a string para mantener la consistencia
 
         if self.existe_producto(id_str):
@@ -57,13 +46,14 @@ class GestionProductos:
         self.productos[id_str] = {
             'id': id,
             'nombre': nombre,
+            'detalle': detalle,
             'stock': stock,
             'precio': precio
         }
 
         self.guardar_datos()
 
-    def editar_producto(self, id, nombre=None, stock=None, precio=None):
+    def editar_producto(self, id, nombre=None, detalle=None,stock=None, precio=None):
         id_str = str(id)
 
         if id_str not in self.productos:
@@ -76,8 +66,11 @@ class GestionProductos:
         # Actualización de datos
         if nombre:
             producto["nombre"] = nombre
+        if detalle is not None:
+            producto["detalle"] = detalle
         if stock is not None:
             producto["stock"] = stock
+        
         if precio is not None:
             producto["precio"] = precio
 

@@ -210,6 +210,7 @@ class AgregarVentaDialog(wx.Dialog):
         accel_tbl = wx.AcceleratorTable([
         (wx.ACCEL_CTRL, ord('G'), btn_ok.GetId()),  # Ctrl + G para guardar
         (wx.ACCEL_CTRL, ord('E'), self.btn_eliminar_producto.GetId()),  # Ctrl + E para eliminar producto
+        (wx.ACCEL_CTRL, ord('A'), self.btn_agregar_producto.GetId()),  # Ctrl + E para eliminar producto
         (wx.ACCEL_CTRL, ord('B'), self.txt_buscar_producto.GetId()),  # Ctrl + B para buscar producto
     ])
         self.SetAcceleratorTable(accel_tbl)

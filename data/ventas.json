@@ -55,5 +55,15 @@
             903
         ],
         "total": 29000.0
+    },
+    {
+        "id": 7,
+        "fecha": "25/02/2025 15:25:51",
+        "cliente": "Patricia Sosa",
+        "productos": [
+            981,
+            903
+        ],
+        "total": 46999.0
     }
 ]
