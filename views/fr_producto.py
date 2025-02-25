@@ -1,5 +1,7 @@
 import datetime
+
 import os
+from module.ReproductorSonido import ReproductorSonido
 from module.Productos import Producto
 from module.GestionProducto import GestionProductos
 from module.Ventas import GestionVentas, Venta
@@ -40,8 +42,22 @@ class VentanaProducto(wx.Frame):
         btn_cerrar.Bind(wx.EVT_BUTTON, self.cerrar_ventana)
         # Área de mensajes
         self.lbl_mensaje = wx.StaticText(panel, label="", pos=(10, 200))
-
+ # Capturar eventos de teclado
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_down)
         self.Show()
+
+    def on_key_down(self, event):
+
+        key_code = event.GetKeyCode()
+        control_presionado = event.ControlDown()
+
+        if control_presionado and key_code == ord("G"):  # Ctrl + G
+            self.guardar_producto(None)
+        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
+            self.cerrar_ventana(None)
+        event.Skip()  # Permitir que otros eventos se procesen
+
+
 
     def guardar_producto(self, event):
         id_producto = self.txt_id.GetValue()
@@ -73,6 +89,7 @@ class VentanaProducto(wx.Frame):
         gestion_productos.agregar_producto(id_producto, nombre, stock, precio)
 
         print(f"Producto guardado: ID={id_producto}, Producto={nombre}, Stock={stock}, Precio={precio}")  # Usa 'nombre' en lugar de 'nombre_producto'
+        ReproductorSonido.reproducir("Sounds/Ok.wav")
         wx.MessageBox(f"Venta registrada con éxito. ", "Éxito", wx.OK | wx.ICON_INFORMATION)
 
         # Limpiar campos

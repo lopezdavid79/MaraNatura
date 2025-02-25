@@ -4,6 +4,7 @@ import re
 import wx
 import wx.lib.mixins.listctrl as listmix
 
+from module.ReproductorSonido import ReproductorSonido
 from module.GestionCliente import GestionClientes
 from module.Ventas import GestionVentas, Venta
 from module.Productos import Producto  # Asegurar que importamos la gestión de productos
@@ -73,12 +74,14 @@ class ListSale(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.cargar_ventas()  # Actualizar la lista
     
     def abrir_dialogo_nuevo(self, event):
+        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
         dialogo = AgregarVentaDialog(self)
         if dialogo.ShowModal() == wx.ID_OK:
             self.cargar_ventas()  # Actualiza la lista después de agregar una venta
         dialogo.Destroy()
     
     def cerrar_ventana(self, event):
+        ReproductorSonido.reproducir("Sounds/screenCurtainOff.wav")
         self.Close()
 
 
@@ -141,14 +144,17 @@ class AgregarVentaDialog(wx.Dialog):
 
         
         
-        # Cliente
+                # Cliente
         vbox.Add(wx.StaticText(panel, label="Cliente:"), flag=wx.LEFT | wx.TOP, border=10)
         self.txt_cliente = wx.SearchCtrl(panel, style=wx.TE_PROCESS_ENTER)
         vbox.Add(self.txt_cliente, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
+        
         self.lista_clientes = wx.ListBox(panel, style=wx.LB_SINGLE)
         vbox.Add(self.lista_clientes, flag=wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, border=10, proportion=1)
         self.txt_cliente.Bind(wx.EVT_TEXT, self.filtrar_clientes)
         self.lista_clientes.Bind(wx.EVT_LISTBOX, self.seleccionar_cliente)
+        self.txt_cliente.Bind(wx.EVT_KEY_DOWN, self.on_key_cliente)  # Detectar Enter y navegación
+        
         self.cargar_clientes()
 
         # Buscar Producto
@@ -174,6 +180,7 @@ class AgregarVentaDialog(wx.Dialog):
         btn_ok = wx.Button(panel, wx.ID_OK, "Guardar")
         btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
         self.btn_eliminar_producto = wx.Button(panel, label="Eliminar Producto")
+        self.btn_agregar_producto = wx.Button(panel, label="Agregar Producto")
         hbox.Add(self.btn_eliminar_producto, flag=wx.LEFT, border=10)
         hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
         hbox.Add(btn_cancel)
@@ -182,11 +189,12 @@ class AgregarVentaDialog(wx.Dialog):
         panel.SetSizer(vbox)
         self.Bind(wx.EVT_BUTTON, self.guardar_venta, btn_ok)
         self.btn_eliminar_producto.Bind(wx.EVT_BUTTON, self.eliminar_producto)
+        self.btn_agregar_producto.Bind(wx.EVT_BUTTON, self.agregar_producto)
 
         self.productos_seleccionados = []
         self.productos_dict = self.cargar_productos()
         self.actualizar_lista_productos()
-        self.txt_cliente.Bind(wx.EVT_KEY_DOWN, self.on_key_cliente)  # Detectar Enter y navegación
+        
         self.lista_clientes.Bind(wx.EVT_LISTBOX_DCLICK, self.seleccionar_cliente)  # Doble clic para seleccionar
 
         # Total de la venta
@@ -196,6 +204,8 @@ class AgregarVentaDialog(wx.Dialog):
         vbox.Add(self.lbl_total, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
         self.Layout()  # Layout inicial del diálogo
         self.txt_cliente.SetFocus()  # Establecer el foco en txt_cliente
+        
+        
         # 🔥 Atajos de teclado
         accel_tbl = wx.AcceleratorTable([
         (wx.ACCEL_CTRL, ord('G'), btn_ok.GetId()),  # Ctrl + G para guardar
@@ -206,12 +216,14 @@ class AgregarVentaDialog(wx.Dialog):
  
 
 
+
     def cargar_clientes(self):
+        """Carga los clientes en la lista."""
         self.clientes_dict = gestion_clientes.obtener_todos()
         self.lista_clientes.Clear()
         for id_cliente, datos in self.clientes_dict.items():
             self.lista_clientes.Append(f"{datos['nombre']} ({datos['tel']})")
-
+    
     def filtrar_clientes(self, event):
         """Filtra los clientes según el texto ingresado y mantiene la navegación."""
         filtro = self.txt_cliente.GetValue().lower()
@@ -226,35 +238,28 @@ class AgregarVentaDialog(wx.Dialog):
             if seleccion_anterior == wx.NOT_FOUND:
                 self.lista_clientes.SetSelection(0)  # Solo si antes no había selección
             self.lista_clientes.SetFocus()  # Mantiene la navegación con teclas
+            # 🔥 Aquí forzamos la lectura de la selección en lectores de pantalla
+            seleccion = self.lista_clientes.GetStringSelection()
+            if seleccion:
+                wx.CallAfter(self.lista_clientes.SetLabel, seleccion)
 
+    
     def seleccionar_cliente(self, event=None):
         """Selecciona el cliente y devuelve el foco al campo de texto."""
         seleccion = self.lista_clientes.GetStringSelection()
         if seleccion:
             self.txt_cliente.SetValue(seleccion.split(' (')[0])  # Guarda solo el nombre
-            self.txt_cliente.SetFocus()  # Vuelve al campo de texto
-            self.lista_clientes.Hide()  # Oculta la lista solo después de seleccionar
+            self.lista_clientes.Hide()  # Oculta la lista después de seleccionar
+            self.txt_cliente.SetFocus()  # Devuelve el foco al campo de texto
 
     def on_key_cliente(self, event):
-        """Permite movernos con las flechas y seleccionar con Enter."""
+        """Permite seleccionar el cliente solo con Enter (deshabilita las flechas)."""
         keycode = event.GetKeyCode()
-        index = self.lista_clientes.GetSelection()
-        total_clientes = self.lista_clientes.GetCount()
 
-        if keycode == wx.WXK_RETURN:  # Enter para seleccionar el cliente
-            if total_clientes > 0:
-                self.seleccionar_cliente()
-        elif keycode == wx.WXK_DOWN:  # Mover hacia abajo en la lista
-            if index < total_clientes - 1:
-                self.lista_clientes.SetSelection(index + 1)
-                self.anunciar_seleccion()
-        elif keycode == wx.WXK_UP:  # Mover hacia arriba en la lista
-            if index > 0:
-                self.lista_clientes.SetSelection(index - 1)
-                self.anunciar_seleccion()
+        if keycode == wx.WXK_RETURN:  # Solo se selecciona con Enter
+            self.seleccionar_cliente()
         else:
-            event.Skip()  # Permite otros eventos del teclado
-
+            event.Skip()  # Permite otros eventos del teclado, pero no las flechas
     def anunciar_seleccion(self):
         """Fuerza la lectura de la selección en lectores de pantalla."""
         seleccion = self.lista_clientes.GetStringSelection()
@@ -337,12 +342,21 @@ class AgregarVentaDialog(wx.Dialog):
         
         self.Layout()  # Forzar la actualización del layout
 
+
     def navegar_productos(self, event):
         keycode = event.GetKeyCode()
         if keycode == wx.WXK_RETURN:
             self.agregar_producto(None)
         elif keycode == wx.WXK_DELETE:
             self.eliminar_producto(None)
+        elif keycode == wx.WXK_UP:
+            current_selection = self.list_productos.GetSelection()
+            if current_selection > 0:
+                self.list_productos.SetSelection(current_selection - 1)
+        elif keycode == wx.WXK_DOWN:
+            current_selection = self.list_productos.GetSelection()
+            if current_selection < self.list_productos.GetCount() - 1:
+                self.list_productos.SetSelection(current_selection + 1)
         else:
             event.Skip()
 
@@ -383,6 +397,6 @@ class AgregarVentaDialog(wx.Dialog):
         #print(f"Tipo de self.productos_dict: {type(self.productos_dict)}")
         #print(f"Contenido de self.productos_dict: {self.productos_dict}")
         gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict, total_venta)
-
+        ReproductorSonido.reproducir("Sounds/Ok.wav")
         wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
         self.EndModal(wx.ID_OK)

@@ -4,6 +4,8 @@ from Views.fr_producto import VentanaProducto
 from Views.fr_listSale import ListSale
 from Views.fr_cliente import VentanaCliente  # Importamos la ventana de clientes
 from Views.fr_listClient  import ListaClientes  # Importamos la gestión de clientes
+from module.ReproductorSonido  import ReproductorSonido 
+
 
 class Principal(wx.Frame):
     def __init__(self, *args, **kwds):
@@ -37,7 +39,7 @@ class Principal(wx.Frame):
         sales_menu.Append(new_sale_item)
 
         # Añadir los menús a la barra de menú
-        menubar.Append(file_menu, "Archivo")
+        menubar.Append(file_menu, "Productos")
         menubar.Append(client_menu, "Clientes")  # Agregamos la sección de clientes
         menubar.Append(sales_menu, "Ventas")
         self.SetMenuBar(menubar)
@@ -49,7 +51,8 @@ class Principal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_new_client, new_client_item)  # Nuevo Cliente
         self.Bind(wx.EVT_MENU, self.on_list_client, list_client_item)  # Lista de Clientes
         self.Bind(wx.EVT_MENU, self.on_list_sale, new_sale_item)
-
+        # Reproducir sonido de inicio
+        ReproductorSonido.reproducir("Sounds/Inicio.wav")
         self.SetTitle("Gestión Ventas de Mara Natura")
         self.SetSize((600, 400))
         self.Centre()
@@ -60,6 +63,7 @@ class Principal(wx.Frame):
         producto_form.Show()
 
     def on_list_product(self, event):
+        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
         """Abre el formulario de lista de productos."""
         list_producto_form = ListaProductos(self, id=None, title="Lista de Productos")
         list_producto_form.Show()
@@ -70,15 +74,20 @@ class Principal(wx.Frame):
         cliente_form.Show()
 
     def on_list_client(self, event):
-        
+        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
         list_client_form = ListaClientes(self, id=None, title="Lista de Clientes")
         list_client_form.Show()
 
     def on_list_sale(self, event):
         """Abre el formulario de lista de ventas."""
+        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
         list_sale_form = ListSale(self, id=None, title="Lista de Ventas")
         list_sale_form.Show()
 
     def on_exit(self, event):
         """Cierra la aplicación."""
-        self.Close()
+        ReproductorSonido.reproducir("Sounds/Salir.wav")
+        wx.CallLater(1000, self.Close)  # Espera 1 segundo antes de cerrar
+        #self.Close()
+        wx.Exit()
+        

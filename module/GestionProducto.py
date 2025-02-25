@@ -6,6 +6,19 @@ class GestionProductos:
         self.nombre_archivo = nombre_archivo
         self.productos = self.cargar_datos()  # Cargar los productos al iniciar
 
+    def on_key_down(self, event):
+
+        key_code = event.GetKeyCode()
+        control_presionado = event.ControlDown()
+
+        if control_presionado and key_code == ord("G"):  # Ctrl + G
+            self.guardar_cliente(None)
+        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
+            self.cerrar_ventana(None)
+        event.Skip()  # Permitir que otros eventos se procesen
+
+
+
     def cargar_datos(self):
         """Carga los productos desde el archivo JSON como un diccionario con claves tipo str."""
         if os.path.exists(self.nombre_archivo):

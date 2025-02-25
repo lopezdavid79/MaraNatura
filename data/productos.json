@@ -2,31 +2,31 @@
     "902": {
         "id": 902,
         "nombre": "jabones nature",
-        "stock": 9,
+        "stock": 8,
         "precio": 6000.0
     },
     "911": {
         "id": 911,
         "nombre": "Rolón sin olor ",
-        "stock": 10,
+        "stock": 9,
         "precio": 4500.0
     },
     "933": {
         "id": 933,
         "nombre": "Jabones Eco",
-        "stock": 10,
+        "stock": 9,
         "precio": 6999.0
     },
     "903": {
         "id": 903,
         "nombre": "Bs Limón",
-        "stock": 10,
+        "stock": 9,
         "precio": 23000.0
     },
     "932": {
         "id": 932,
         "nombre": "Bs Mango",
-        "stock": 10,
+        "stock": 9,
         "precio": 23999.0
     },
     "801": {
@@ -43,8 +43,8 @@
     },
     "803": {
         "id": 803,
-        "nombre": "Perfume Todo Día",
-        "stock": 3,
+        "nombre": "Perfume Todo día",
+        "stock": 2,
         "precio": 43000.0
     },
     "981": {
@@ -52,11 +52,5 @@
         "nombre": "Bs Mango Rojo",
         "stock": 10,
         "precio": 23999.0
-    },
-    "982": {
-        "id": 982,
-        "nombre": "perfume ",
-        "stock": 10,
-        "precio": 45000.0
     }
 }

@@ -22,5 +22,17 @@
         "nombre": "Catalina Alvarez",
         "dire": "salta 333",
         "tel": "3534294666"
+    },
+    {
+        "id": 5,
+        "nombre": "Bruno Piña",
+        "dire": "Colón 905",
+        "tel": "3534299894"
+    },
+    {
+        "id": 6,
+        "nombre": "Milagros Gill",
+        "dire": "La rioja 223",
+        "tel": "3534666777"
     }
 ]

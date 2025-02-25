@@ -36,8 +36,24 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         #boton para actualizar 
         btn_actual= wx.Button(panel, label="Actualizar", pos=(150, 300))
         btn_actual.Bind(wx.EVT_BUTTON, self.actualizar_lista_productos)
+        # Capturar eventos de teclado
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_down)
         self.Show()
     
+    def on_key_down(self, event):
+
+        key_code = event.GetKeyCode()
+        control_presionado = event.ControlDown()
+
+        if control_presionado and key_code == ord("N"):  # Ctrl + N
+            self.abrir_dialogo_nuevo(None)
+        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
+            self.on_close(None)
+        event.Skip()  # Permitir que otros eventos se procesen
+
+
+
+
     def cargar_productos(self):
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
         productos = gestion_productos.obtener_todos()

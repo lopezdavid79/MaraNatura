@@ -1,5 +1,6 @@
 import wx
 import re
+from module.ReproductorSonido import ReproductorSonido
 from module.GestionCliente  import GestionClientes
 
 # Inicialización
@@ -38,8 +39,21 @@ class VentanaCliente(wx.Frame):
 
         # Área de mensajes
         self.lbl_mensaje = wx.StaticText(panel, label="", pos=(10, 200))
-
+        # Capturar eventos de teclado
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_down)
         self.Show()
+
+        """Captura teclas y ejecuta acciones según la combinación."""
+    def on_key_down(self, event):
+
+        key_code = event.GetKeyCode()
+        control_presionado = event.ControlDown()
+
+        if control_presionado and key_code == ord("G"):  # Ctrl + G
+            self.guardar_cliente(None)
+        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
+            self.cerrar_ventana(None)
+        event.Skip()  # Permitir que otros eventos se procesen
 
     def guardar_cliente(self, event):
         #id_cliente = self.txt_id.GetValue()
@@ -85,6 +99,7 @@ class VentanaCliente(wx.Frame):
         gestion_clientes.registrar_cliente(nombre, direccion, telefono)
 
         print(f"Cliente guardado: ID={id_cliente}, Nombre={nombre}, Dirección={direccion}, Teléfono={telefono}")
+        ReproductorSonido.reproducir("Sounds/Ok.wav")
         self.mostrar_mensaje("Cliente guardado con éxito.", wx.ICON_INFORMATION)
 
         # Limpiar campos
