@@ -47,14 +47,14 @@
     "803": {
         "id": 803,
         "nombre": "Perfume Todo Día ",
-        "stock": 2,
+        "stock": 1,
         "precio": 43000.0,
         "detalle": "No disponible"
     },
     "981": {
         "id": 981,
         "nombre": "Bs Mango Rojo",
-        "stock": 9,
+        "stock": 8,
         "precio": 23999.0
     },
     "833": {
@@ -68,7 +68,7 @@
         "id": 835,
         "nombre": "jabones ",
         "detalle": "sin detale",
-        "stock": 11,
+        "stock": 10,
         "precio": 6700.0
     },
     "999": {

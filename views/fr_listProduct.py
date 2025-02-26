@@ -107,6 +107,7 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         event.Skip()  # Permitir que la ventana se cierre normalmente
 
     def actualizar_lista_productos(self,event):
+        ReproductorSonido.reproducir("refresh.wav")
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
         self.cargar_productos()   #Vuelve a cargar los productos del archivo JSON        
         #print("Productos obtenidos:", productos)  # 🛠️ Depuración

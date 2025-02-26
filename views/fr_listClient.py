@@ -49,7 +49,7 @@ class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         self.cargar_clientes()
         print("Lista actualizada en la interfaz")
         sys.stdout.flush()  # <-- Fuerza la salida en la consola
-        wx.MessageBox("Lista de clientes actualizada.", "Información", wx.OK | wx.ICON_INFORMATION)
+        ReproductorSonido.reproducir("refresh.wav")
 
     def cargar_clientes(self):
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos clientes
