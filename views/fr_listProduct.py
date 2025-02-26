@@ -1,6 +1,6 @@
 import wx
 import wx.lib.mixins.listctrl as listmix
-
+from module.ReproductorSonido import ReproductorSonido
 from module.GestionProducto import GestionProductos
 from Views.fr_producto import VentanaProducto
 # Inicialización de la gestión de productos
@@ -98,7 +98,7 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         producto_form = VentanaProducto(self, id=None, title="Nuevo Producto")  # self es el padre de la ventana
         producto_form.Bind(wx.EVT_CLOSE, self.cerrar_ventana)  # Detectar cierre
         producto_form.Show()  # Mostrar el formulario         
-
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
     def cerrar_ventana(self, event):
         print("Producto agregado, actualizando lista...")
         self.cargar_productos()
@@ -111,6 +111,7 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         
             
     def on_close(self, event):
+        ReproductorSonido.reproducir("screenCurtainOff.wav")
         self.Close()
                 
 class DetalleProductoDialog(wx.Dialog):
@@ -124,7 +125,7 @@ class DetalleProductoDialog(wx.Dialog):
         # Mostrar detalles
         vbox.Add(wx.StaticText(panel, label=f"ID: {id_producto}"), flag=wx.LEFT | wx.TOP, border=10)
         vbox.Add(wx.StaticText(panel, label=f"Nombre: {datos['nombre']}"), flag=wx.LEFT | wx.TOP, border=10)
-        vbox.Add(wx.StaticText(panel, label=f"Detalle: {datos['detalle']}"), flag=wx.LEFT | wx.TOP, border=10)
+        vbox.Add(wx.StaticText(panel, label=f"Detalle: {datos.get('detalle', 'No disponible')}"), flag=wx.LEFT | wx.TOP, border=10)
         vbox.Add(wx.StaticText(panel, label=f"Stock: {datos['stock']}"), flag=wx.LEFT | wx.TOP, border=10)
         vbox.Add(wx.StaticText(panel, label=f"Precio: {datos['precio']}"), flag=wx.LEFT | wx.TOP, border=10)
 

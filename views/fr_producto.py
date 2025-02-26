@@ -97,7 +97,7 @@ class VentanaProducto(wx.Frame):
         gestion_productos.agregar_producto(id_producto, nombre, detalle, stock, precio)
 
         print(f"Producto guardado: ID={id_producto}, Producto={nombre}, Stock={stock}, Precio={precio}")
-        ReproductorSonido.reproducir("Sounds/Ok.wav")
+        ReproductorSonido.reproducir("Ok.wav")
 
         wx.MessageBox("Producto guardado con éxito.", "Éxito", wx.OK | wx.ICON_INFORMATION)
 
@@ -212,7 +212,7 @@ class VentanaProducto(wx.Frame):
         gestion_productos.agregar_producto(id_producto, nombre, detalle, stock, precio)
 
         print(f"Producto guardado: ID={id_producto}, Producto={nombre}, Stock={stock}, Precio={precio}")
-        ReproductorSonido.reproducir("Sounds/Ok.wav")
+        ReproductorSonido.reproducir("Ok.wav")
 
         wx.MessageBox("Producto guardado con éxito.", "Éxito", wx.OK | wx.ICON_INFORMATION)
 

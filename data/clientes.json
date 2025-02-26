@@ -1,38 +1,20 @@
 [
     {
         "id": 1,
-        "nombre": "Patricia Sosa",
-        "dire": "Chaco 223",
-        "tel": "3534299878"
+        "nombre": "Ana Lorenzo ",
+        "dire": "Catamarca 344",
+        "tel": "3534294632"
     },
     {
         "id": 2,
-        "nombre": "Natalia Perez",
-        "dire": "Jujuy  222",
-        "tel": "3534299898"
+        "nombre": "JosÃ© Perales",
+        "dire": "Jujuy 565",
+        "tel": "3534565787"
     },
     {
         "id": 3,
-        "nombre": "paola soria",
-        "dire": "salta",
-        "tel": "35344446"
-    },
-    {
-        "id": 4,
-        "nombre": "Catalina Alvarez",
-        "dire": "salta 333",
-        "tel": "3534294666"
-    },
-    {
-        "id": 5,
-        "nombre": "Bruno Piña",
-        "dire": "Colón 905",
-        "tel": "3534299894"
-    },
-    {
-        "id": 6,
-        "nombre": "Milagros Gill",
-        "dire": "La rioja 223",
-        "tel": "3534666777"
+        "nombre": "Alberto Tosas",
+        "dire": "Malvvinas 1343",
+        "tel": "3534556787"
     }
 ]

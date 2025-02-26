@@ -1,29 +1,51 @@
 import json
+import os
+import sys
+
 from module.Clientes import Cliente  # Importa la clase Cliente
 
 
 class GestionClientes:
-    def __init__(self, nombre_archivo='data/clientes.json'):
+    def __init__(self, nombre_archivo='clientes.json'):
         self.nombre_archivo = nombre_archivo
         self.clientes = self.cargar_datos()
         if not isinstance(self.clientes, list):  
             self.clientes = []  
 
+
+
+    def _obtener_ruta_completa(self): #funcion para obtener la ruta del json.
+        """Obtiene la ruta completa al archivo JSON."""
+        if getattr(sys, 'frozen', False):
+            # Estamos en un paquete PyInstaller
+            ruta_base = sys._MEIPASS
+        else:
+            # Estamos ejecutando desde el código fuente
+            ruta_base = os.path.abspath('.')
+        return os.path.join(ruta_base, 'data', self.nombre_archivo) # importante que la carpeta se llame como la declaraste en add-data.
+
     def cargar_datos(self):
         """Carga los clientes desde el archivo JSON."""
-        try:
-            with open(self.nombre_archivo, 'r') as archivo:
-                return json.load(archivo)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return []  
+        ruta_completa = self._obtener_ruta_completa()
+        if os.path.exists(ruta_completa):
+            with open(ruta_completa, 'r', encoding='utf-8') as archivo:
+                try:
+                    clientes_lista = json.load(archivo)  # Carga como lista
+                    return clientes_lista
+                except json.JSONDecodeError:
+                    print("❌ Error al leer JSON, inicializando una lista vacía.")
+                    return []
+        else:
+            return []
 
     def guardar_datos(self):
         """Guarda la lista de clientes en el archivo JSON."""
-        with open(self.nombre_archivo, 'w') as archivo:
+        ruta_completa = self._obtener_ruta_completa()
+        with open(ruta_completa, 'w', encoding='utf-8') as archivo:
             json.dump(self.clientes, archivo, indent=4, ensure_ascii=False)
 
-    def registrar_cliente(self, name_cliente, dire, tel):
-        """Registra un nuevo cliente y lo guarda en la base de datos."""
+    """Registra un nuevo cliente y lo guarda en la base de datos."""
+    def registrar_cliente(self, name_cliente, dire, tel):    
         nuevo_id = len(self.clientes) + 1  
         nuevo_cliente = Cliente(nuevo_id, name_cliente, dire, tel)
 

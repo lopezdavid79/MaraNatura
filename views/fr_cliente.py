@@ -99,11 +99,11 @@ class VentanaCliente(wx.Frame):
         gestion_clientes.registrar_cliente(nombre, direccion, telefono)
 
         print(f"Cliente guardado: ID={id_cliente}, Nombre={nombre}, Dirección={direccion}, Teléfono={telefono}")
-        ReproductorSonido.reproducir("Sounds/Ok.wav")
+        ReproductorSonido.reproducir("  Ok.wav")
         self.mostrar_mensaje("Cliente guardado con éxito.", wx.ICON_INFORMATION)
 
         # Limpiar campos
-        self.txt_id.SetValue("")
+        
         self.txt_nombre.SetValue("")
         self.txt_direccion.SetValue("")
         self.txt_telefono.SetValue("")

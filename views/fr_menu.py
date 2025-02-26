@@ -52,7 +52,7 @@ class Principal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_list_client, list_client_item)  # Lista de Clientes
         self.Bind(wx.EVT_MENU, self.on_list_sale, new_sale_item)
         # Reproducir sonido de inicio
-        ReproductorSonido.reproducir("Sounds/Inicio.wav")
+        ReproductorSonido.reproducir("Inicio.wav")
         self.SetTitle("Gestión Ventas de Mara Natura")
         self.SetSize((600, 400))
         self.Centre()
@@ -63,7 +63,7 @@ class Principal(wx.Frame):
         producto_form.Show()
 
     def on_list_product(self, event):
-        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
         """Abre el formulario de lista de productos."""
         list_producto_form = ListaProductos(self, id=None, title="Lista de Productos")
         list_producto_form.Show()
@@ -74,19 +74,19 @@ class Principal(wx.Frame):
         cliente_form.Show()
 
     def on_list_client(self, event):
-        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
         list_client_form = ListaClientes(self, id=None, title="Lista de Clientes")
         list_client_form.Show()
 
     def on_list_sale(self, event):
         """Abre el formulario de lista de ventas."""
-        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
         list_sale_form = ListSale(self, id=None, title="Lista de Ventas")
         list_sale_form.Show()
 
     def on_exit(self, event):
         """Cierra la aplicación."""
-        ReproductorSonido.reproducir("Sounds/Salir.wav")
+        ReproductorSonido.reproducir("Salir.wav")
         wx.CallLater(1000, self.Close)  # Espera 1 segundo antes de cerrar
         #self.Close()
         wx.Exit()

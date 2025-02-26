@@ -1,3 +1,4 @@
+import sys
 import os
 import json
 import re
@@ -74,14 +75,14 @@ class ListSale(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.cargar_ventas()  # Actualizar la lista
     
     def abrir_dialogo_nuevo(self, event):
-        ReproductorSonido.reproducir("Sounds/screenCurtainOn.wav")
-        dialogo = AgregarVentaDialog(self)
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
+        dialogo = AgregarVentaDialog(self,gestion_ventas        )
         if dialogo.ShowModal() == wx.ID_OK:
             self.cargar_ventas()  # Actualiza la lista después de agregar una venta
         dialogo.Destroy()
     
     def cerrar_ventana(self, event):
-        ReproductorSonido.reproducir("Sounds/screenCurtainOff.wav")
+        ReproductorSonido.reproducir("screenCurtainOff.wav")
         self.Close()
 
 
@@ -136,11 +137,12 @@ class DetalleVentaDialog(wx.Dialog):
 
 
 class AgregarVentaDialog(wx.Dialog):
-    def __init__(self, parent):
+    def __init__(self, parent,gestion_ventas):
         super().__init__(parent, title="Nueva Venta", size=(400, 400))
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.nombre_archivo_productos = 'data/productos.json'
+        self.gestion_ventas=gestion_ventas
 
         
         
@@ -268,17 +270,18 @@ class AgregarVentaDialog(wx.Dialog):
             wx.CallAfter(self.lista_clientes.SetLabel, seleccion)
 
     def cargar_productos(self):
+        #ruta_completa = self.gestion_ventas._obtener_ruta_completa(self.nombre_archivo_productos) #obtenemos la ruta absoluta de gestion_ventas.
+        ruta_completa = os.path.join(os.getcwd(), "data", "productos.json")  # Construcción segura de 
+        print(f"Ruta completa del archivo: {ruta_completa}")
         try:
-            if not os.path.exists(self.nombre_archivo_productos):
-                wx.MessageBox(f"El archivo {self.nombre_archivo_productos} no se encuentra.", "Error", wx.OK | wx.ICON_ERROR)
+            if not os.path.exists(ruta_completa): #verificamos la ruta completa.
+                wx.MessageBox(f"El archivo {ruta_completa} no se encuentra.", "Error", wx.OK | wx.ICON_ERROR)
                 return {}
 
-            with open(self.nombre_archivo_productos, 'r') as archivo:
+            with open(ruta_completa, 'r', encoding='utf-8') as archivo: #abrimos el archivo con la ruta completa y codificacion utf-8.
                 try:
-                    #productos_lista = json.load(archivo)
-                    productos_dict = json.load(archivo)  # El archivo ya es un diccionario
-                    print("Contenido de productos_dict:", productos_dict)  # Depuración
-                    
+                    productos_dict = json.load(archivo)
+                    print("Contenido de productos_dict:", productos_dict)
                     return productos_dict
                 except (TypeError, KeyError) as e:
                     wx.MessageBox(f"Error al cargar productos: Formato JSON incorrecto. {e}", "Error", wx.OK | wx.ICON_ERROR)
@@ -289,8 +292,6 @@ class AgregarVentaDialog(wx.Dialog):
         except Exception as e:
             wx.MessageBox(f"Error inesperado al cargar productos: {e}", "Error", wx.OK | wx.ICON_ERROR)
             return {}
-
-
 
     def actualizar_lista_productos(self, filtro=""):
         self.list_productos.Clear()
@@ -398,6 +399,6 @@ class AgregarVentaDialog(wx.Dialog):
         #print(f"Tipo de self.productos_dict: {type(self.productos_dict)}")
         #print(f"Contenido de self.productos_dict: {self.productos_dict}")
         gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict, total_venta)
-        ReproductorSonido.reproducir("Sounds/Ok.wav")
+        ReproductorSonido.reproducir("Ok.wav")
         wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
         self.EndModal(wx.ID_OK)

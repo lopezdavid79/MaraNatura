@@ -1,6 +1,7 @@
 import sys
 import wx
 import wx.lib.mixins.listctrl as listmix
+from module.ReproductorSonido import ReproductorSonido
 from module.GestionCliente import GestionClientes
 from Views.fr_cliente import VentanaCliente
 
@@ -73,11 +74,13 @@ class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.cargar_clientes()  # Actualizar la lista después de la edición
 
     def abrir_dialogo_nuevo(self, event):
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
         cliente_form = VentanaCliente(self, id=None, title="Nuevo Cliente")
         cliente_form.Show()
         self.cargar_clientes()  # Actualiza la lista después de agregar un cliente
 
     def cerrar_ventana(self, event):
+        ReproductorSonido.reproducir("screenCurtainOff  .wav")
         self.Close()
 
 

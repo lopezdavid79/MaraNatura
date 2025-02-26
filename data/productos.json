@@ -7,21 +7,24 @@
     },
     "911": {
         "id": 911,
-        "nombre": "RolÃ³n sin olor ",
+        "nombre": "Rolón sin olor ",
         "stock": 9,
-        "precio": 4500.0
+        "precio": 4500.0,
+        "detalle": "no disponible"
     },
     "933": {
         "id": 933,
         "nombre": "Jabones Eco",
         "stock": 9,
-        "precio": 6999.0
+        "precio": 6999.0,
+        "detalle": "No disponible"
     },
     "903": {
         "id": 903,
-        "nombre": "Bs LimÃ³n",
+        "nombre": "Bs Limón",
         "stock": 8,
-        "precio": 23000.0
+        "precio": 23000.0,
+        "detalle": "No disponible"
     },
     "932": {
         "id": 932,
@@ -43,9 +46,10 @@
     },
     "803": {
         "id": 803,
-        "nombre": "Perfume Todo dÃ­a",
+        "nombre": "Perfume Todo Día ",
         "stock": 2,
-        "precio": 43000.0
+        "precio": 43000.0,
+        "detalle": "No disponible"
     },
     "981": {
         "id": 981,

@@ -1,31 +1,44 @@
-import json  # Importa el módulo json
-import os    # Importa el módulo os para trabajar con rutas
+import json
+import os
+import sys
 
 class GestionProductos:
-    def __init__(self, nombre_archivo='data/productos.json'):
+    def __init__(self, nombre_archivo='productos.json'): #quita la carpeta data, ya que la ruta base la agrega sys._MEIPASS
         self.nombre_archivo = nombre_archivo
-        self.productos = self.cargar_datos()  # Cargar los productos al iniciar
+        self.productos = self.cargar_datos()
 
-
+    def _obtener_ruta_completa(self): #funcion para obtener la ruta del json.
+        """Obtiene la ruta completa al archivo JSON."""
+        if getattr(sys, 'frozen', False):
+            # Estamos en un paquete PyInstaller
+            ruta_base = sys._MEIPASS
+        else:
+            # Estamos ejecutando desde el código fuente
+            ruta_base = os.path.abspath('.')
+        return os.path.join(ruta_base, 'data', self.nombre_archivo) # importante que la carpeta se llame como la declaraste en add-data.
 
     def cargar_datos(self):
-        """Carga los productos desde el archivo JSON como un diccionario con claves tipo str."""
-        if os.path.exists(self.nombre_archivo):
-            with open(self.nombre_archivo, 'r', encoding='utf-8') as archivo:
+        """Carga los productos desde el archivo JSON."""
+        ruta_completa = self._obtener_ruta_completa()
+        if os.path.exists(ruta_completa):
+            with open(ruta_completa, 'r', encoding='utf-8') as archivo:
                 try:
                     productos_dict = json.load(archivo)
-                    return {str(k): v for k, v in productos_dict.items()}  # Asegurar claves como str
+                    return {str(k): v for k, v in productos_dict.items()}
                 except json.JSONDecodeError:
                     print("❌ Error al leer JSON, inicializando un diccionario vacío.")
                     return {}
         else:
-            return {}  # Devuelve un diccionario vacío si no existe el archivo
+            return {}
 
     def guardar_datos(self):
-        """Guarda los productos en el archivo JSON como un diccionario."""
-        with open(self.nombre_archivo, 'w', encoding='utf-8') as archivo:
+        """Guarda los productos en el archivo JSON."""
+        ruta_completa = self._obtener_ruta_completa()
+        with open(ruta_completa, 'w', encoding='utf-8') as archivo:
             json.dump(self.productos, archivo, indent=4, ensure_ascii=False)
 
+    # El resto de los métodos (existe_producto, agregar_producto, etc.) permanecen igual.
+    # ...
     def existe_producto(self, id):
         """Verifica si un producto con el ID dado existe en el diccionario."""
         return str(id) in self.productos

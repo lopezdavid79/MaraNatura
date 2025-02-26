@@ -1,4 +1,6 @@
 import json
+import sys
+import os
 from datetime import datetime
 
 class Venta:
@@ -9,32 +11,46 @@ class Venta:
         self.productos = productos
 
 class GestionVentas:
-    def __init__(self, nombre_archivo_ventas='data/ventas.json', nombre_archivo_productos='data/productos.json'):
+    def __init__(self, nombre_archivo_ventas='ventas.json', nombre_archivo_productos='productos.json'):
         self.nombre_archivo_ventas = nombre_archivo_ventas
         self.nombre_archivo_productos = nombre_archivo_productos
         self.ventas = self.cargar_datos(self.nombre_archivo_ventas)
         self.productos = self.cargar_datos(self.nombre_archivo_productos)
         self.id_counter = self.get_next_id()
 
-    def cargar_datos(self, nombre_archivo_ventas):
+    def _obtener_ruta_completa(self, nombre_archivo):
+        """Obtiene la ruta completa al archivo JSON."""
+        if getattr(sys, 'frozen', False):
+            # Estamos en un paquete PyInstaller
+            ruta_base = sys._MEIPASS
+        else:
+            # Estamos ejecutando desde el código fuente
+            ruta_base = os.path.abspath('.')
+        return os.path.join(ruta_base, 'data', nombre_archivo)
+
+    def cargar_datos(self, nombre_archivo):
+        """Carga los datos desde un archivo JSON."""
+        ruta_completa = self._obtener_ruta_completa(nombre_archivo)
         try:
-            with open(nombre_archivo_ventas, 'r', encoding='utf-8') as archivo:
+            with open(ruta_completa, 'r', encoding='utf-8') as archivo:
                 return json.load(archivo)
         except (FileNotFoundError, json.JSONDecodeError):
             return []  # Retorna una lista vacía en caso de error
 
-
     def guardar_datos(self):
+        """Guarda los datos de ventas en el archivo JSON."""
+        ruta_completa = self._obtener_ruta_completa(self.nombre_archivo_ventas)
         try:
-            with open(self.nombre_archivo_ventas, 'w', encoding='utf-8') as archivo:
+            with open(ruta_completa, 'w', encoding='utf-8') as archivo:
                 json.dump(self.ventas, archivo, indent=4, ensure_ascii=False)
         except Exception as e:
-            print(f"Error al guardar datos en : ")  # Asegúrate de descomentar esta línea
+            print(f"Error al guardar datos en {ruta_completa}: {e}")
 
     def get_next_id(self):
-        if self.ventas and isinstance(self.ventas, list):
-            return max((venta.get('id', 0) for venta in self.ventas), default=0) + 1
-        return 1
+        """Obtiene el próximo ID disponible para una venta."""
+        if not self.ventas:
+            return 1
+        return max(venta['id'] for venta in self.ventas) + 1
 
     def registrar_venta(self, fecha, cliente, productos_ids, productos_dict, total_venta):
         nuevo_id = len(self.ventas) + 1  # Asigna el siguiente ID disponible
