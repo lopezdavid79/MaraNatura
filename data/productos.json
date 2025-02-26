@@ -63,5 +63,12 @@
         "detalle": "floral sutil",
         "stock": 10,
         "precio": 23999.0
+    },
+    "835": {
+        "id": 835,
+        "nombre": "jabones ",
+        "detalle": "sin detale",
+        "stock": 11,
+        "precio": 6700.0
     }
 }

@@ -95,10 +95,12 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
 
 
     def abrir_dialogo_nuevo(self, event):
-        producto_form = VentanaProducto(self, id=None, title="Nuevo Producto")  # self es el padre de la ventana
-        producto_form.Bind(wx.EVT_CLOSE, self.cerrar_ventana)  # Detectar cierre
-        producto_form.Show()  # Mostrar el formulario         
         ReproductorSonido.reproducir("screenCurtainOn.wav")
+        dialogo = AgregarProductoDialog(self)
+        if dialogo.ShowModal() == wx.ID_OK:
+            self.cargar_producto()  # Actualiza la lista después de agregar una venta
+        dialogo.Destroy()
+    
     def cerrar_ventana(self, event):
         print("Producto agregado, actualizando lista...")
         self.cargar_productos()
@@ -274,3 +276,125 @@ class EliminarProductoDialog(wx.Dialog):
                 self.parent.cargar_productos()  # Actualizar la lista de productos en la ventana principal
         except Exception as e:
             wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)
+
+class AgregarProductoDialog(wx.Dialog):
+    def __init__(self, parent, id=None, title="Nuevo Producto", *args, **kwds):
+        super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds)
+
+        self.id = id  
+        self.SetTitle(title)
+
+        # Panel principal
+        panel = wx.Panel(self)
+
+        # Crear el sizer principal antes de los campos
+        sizer_principal = wx.BoxSizer(wx.VERTICAL)
+
+        # Definición de los campos de entrada (ahora incluimos el sizer principal en la llamada)
+        self.txt_id = self.crear_campo(panel, "ID:", sizer_principal)
+        self.txt_producto = self.crear_campo(panel, "Producto:", sizer_principal)
+        self.txt_detalle = self.crear_campo(panel, "Detalle:", sizer_principal)
+        self.txt_stock = self.crear_campo(panel, "Stock:", sizer_principal)
+        self.txt_precio = self.crear_campo(panel, "Precio:", sizer_principal)
+
+        # Botones de acción
+        btn_guardar = wx.Button(panel, label="Guardar")
+        btn_guardar.Bind(wx.EVT_BUTTON, self.guardar_producto)
+        btn_cerrar = wx.Button(panel, label="Cerrar")
+        btn_cerrar.Bind(wx.EVT_BUTTON, self.cerrar_ventana)
+
+        # Añadir botones al sizer
+        btn_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn_sizer.Add(btn_guardar, 0, wx.ALL, 5)
+        btn_sizer.Add(btn_cerrar, 0, wx.ALL, 5)
+        sizer_principal.Add(btn_sizer, 0, wx.CENTER)
+
+        # Área de mensajes
+        self.lbl_mensaje = wx.StaticText(panel, label="", style=wx.ALIGN_CENTER)
+        sizer_principal.Add(self.lbl_mensaje, 0, wx.ALL | wx.EXPAND, 5)
+
+        # Configurar el panel y el sizer
+        panel.SetSizer(sizer_principal)
+        panel.Layout()
+
+        # Capturar eventos de teclado
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_down)
+
+        self.Show()
+
+    def crear_campo(self, panel, label, sizer_principal):
+        """Función auxiliar para crear etiquetas y campos de entrada y añadirlos al sizer principal."""
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        static_text = wx.StaticText(panel, label=label, size=(80, -1))
+        text_ctrl = wx.TextCtrl(panel, size=(200, -1))
+        
+        sizer.Add(static_text, 0, wx.ALL | wx.CENTER, 5)
+        sizer.Add(text_ctrl, 1, wx.ALL | wx.EXPAND, 5)
+
+        # Agregar el sizer de cada campo al sizer principal
+        sizer_principal.Add(sizer, 0, wx.ALL | wx.EXPAND, 5)
+        
+        return text_ctrl  # Devolver el wx.TextCtrl en lugar del BoxSizer
+
+    def on_key_down(self, event):
+        key_code = event.GetKeyCode()
+        control_presionado = event.ControlDown()
+
+        if control_presionado and key_code == ord("G"):  # Ctrl + G
+            self.guardar_producto(None)
+        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
+            self.cerrar_ventana(None)
+
+        event.Skip()
+
+    def guardar_producto(self, event):
+        id_producto = self.txt_id.GetValue()
+        nombre = self.txt_producto.GetValue()
+        detalle = self.txt_detalle.GetValue()
+        stock = self.txt_stock.GetValue()
+        precio = self.txt_precio.GetValue()
+
+        # Validación de campos vacíos
+        if not all([id_producto, nombre, detalle, stock, precio]):
+            self.mostrar_mensaje("Error: Todos los campos son obligatorios.")
+            return
+
+        # Validación de tipos de datos
+        try:
+            id_producto = int(id_producto)
+            stock = int(stock)
+            precio = float(precio)
+        except ValueError:
+            self.mostrar_mensaje("Error: ID, Stock y Precio deben ser números.")
+            return
+
+        # Validación de ID positivo
+        if id_producto <= 0:
+            self.mostrar_mensaje("Error: El ID debe ser un número positivo.")
+            return
+
+        # Verificar si el ID ya existe
+        if gestion_productos.existe_producto(id_producto):
+            self.mostrar_mensaje("Error: Ya existe un producto con ese ID.")
+            return
+
+        # Agregar el producto
+        gestion_productos.agregar_producto(id_producto, nombre, detalle, stock, precio)
+
+        print(f"Producto guardado: ID={id_producto}, Producto={nombre}, Stock={stock}, Precio={precio}")
+        ReproductorSonido.reproducir("Ok.wav")
+
+        wx.MessageBox("Producto guardado con éxito.", "Éxito", wx.OK | wx.ICON_INFORMATION)
+
+        # Limpiar campos
+        self.txt_id.SetValue("")
+        self.txt_producto.SetValue("")
+        self.txt_detalle.SetValue("")
+        self.txt_stock.SetValue("")
+        self.txt_precio.SetValue("")
+
+    def mostrar_mensaje(self, mensaje, tipo=wx.ICON_ERROR):
+        wx.MessageBox(mensaje, "Error", style=tipo)
+
+    def cerrar_ventana(self, event):
+        self.Close()

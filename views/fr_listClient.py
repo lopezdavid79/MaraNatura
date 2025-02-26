@@ -1,9 +1,10 @@
+import re
 import sys
 import wx
 import wx.lib.mixins.listctrl as listmix
 from module.ReproductorSonido import ReproductorSonido
 from module.GestionCliente import GestionClientes
-from Views.fr_cliente import VentanaCliente
+#from Views.fr_cliente import VentanaCliente
 
 # Inicialización de la gestión de clientes
 gestion_clientes = GestionClientes()
@@ -75,9 +76,11 @@ class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
 
     def abrir_dialogo_nuevo(self, event):
         ReproductorSonido.reproducir("screenCurtainOn.wav")
-        cliente_form = VentanaCliente(self, id=None, title="Nuevo Cliente")
-        cliente_form.Show()
-        self.cargar_clientes()  # Actualiza la lista después de agregar un cliente
+        dialogo = AgregarClienteDialog(self)
+        if dialogo.ShowModal() == wx.ID_OK:
+            self.cargar_clientes()  # Actualiza la lista después de agregar una venta
+        dialogo.Destroy()
+    
 
     def cerrar_ventana(self, event):
         ReproductorSonido.reproducir("screenCurtainOff  .wav")
@@ -226,3 +229,84 @@ class EliminarClienteDialog(wx.Dialog):
                 self.parent.cargar_clientes()  # Actualizar la lista de clientes en la ventana principal
         except Exception as e:
             wx.MessageBox(str(e), "Error", wx.OK | wx.ICON_ERROR)
+class AgregarClienteDialog(wx.Dialog):
+    def __init__(self, parent, id=None, title="Nuevo Cliente"):
+        super().__init__(parent, id=wx.ID_ANY, title=title)
+
+        self.id = id  # Guarda el ID (puede ser None si es un nuevo cliente)
+        self.SetTitle(title)
+        # Crear el layout principal
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        panel = wx.Panel(self)
+        grid = wx.GridBagSizer(5, 5)
+
+        # Etiquetas y campos de entrada
+        grid.Add(wx.StaticText(panel, label="Nombre:"), pos=(0, 0), flag=wx.ALL, border=5)
+        self.txt_nombre = wx.TextCtrl(panel)
+        grid.Add(self.txt_nombre, pos=(0, 1), flag=wx.EXPAND | wx.ALL, border=5)
+        grid.Add(wx.StaticText(panel, label="Dirección:"), pos=(1, 0), flag=wx.ALL, border=5)
+        self.txt_direccion = wx.TextCtrl(panel)
+        grid.Add(self.txt_direccion, pos=(1, 1), flag=wx.EXPAND | wx.ALL, border=5)
+        grid.Add(wx.StaticText(panel, label="Teléfono:"), pos=(2, 0), flag=wx.ALL, border=5)
+        self.txt_telefono = wx.TextCtrl(panel)
+        grid.Add(self.txt_telefono, pos=(2, 1), flag=wx.EXPAND | wx.ALL, border=5)
+
+        # Botones
+        btn_ok = wx.Button(panel, label="Guardar")
+        btn_cancel = wx.Button(panel, wx.ID_CANCEL, "Cancelar")
+        btn_ok.Bind(wx.EVT_BUTTON, self.guardar_cliente)
+        hbox = wx.BoxSizer(wx.HORIZONTAL)
+        hbox.Add(btn_ok, flag=wx.RIGHT, border=10)
+        hbox.Add(btn_cancel)
+        # Agregar al layout
+        vbox.Add(grid, proportion=1, flag=wx.ALL | wx.EXPAND, border=10)
+        vbox.Add(hbox, flag=wx.ALIGN_CENTER | wx.ALL, border=10)
+        panel.SetSizer(vbox)
+        self.Bind(wx.EVT_CHAR_HOOK, self.on_key_down)
+        self.Centre()
+
+    def on_key_down(self, event):
+        key_code = event.GetKeyCode()
+        control_presionado = event.ControlDown()
+
+        if control_presionado and key_code == ord("G"):  # Ctrl + G
+            self.guardar_cliente(None)
+        elif control_presionado and key_code == ord("C"):  # Ctrl + C -> Cerrar ventana
+            self.Close()
+        event.Skip()
+
+    def guardar_cliente(self, event):
+        nombre = self.txt_nombre.GetValue().strip()
+        direccion = self.txt_direccion.GetValue().strip()
+        telefono = self.txt_telefono.GetValue().strip()
+
+        # Validación de campos obligatorios
+        if not nombre or not direccion or not telefono:
+            self.mostrar_mensaje("Error: Todos los campos son obligatorios.")
+            return
+        # Validación del nombre
+        if not re.match("^[A-Za-zÁÉÍÓÚáéíóúñÑ ]+$", nombre):
+            self.mostrar_mensaje("Error: El nombre solo puede contener letras, acentos y espacios.")
+            return
+
+        # Validación del teléfono
+        if not telefono.isdigit() or not (7 <= len(telefono) <= 15):
+            self.mostrar_mensaje("Error: El teléfono debe contener solo números y tener entre 7 y 15 dígitos.")
+            return
+
+        # Verificar si el ID ya existe
+        # Registrar cliente en el sistema (sustituye con tu lógica)
+        gestion_clientes.registrar_cliente(nombre, direccion, telefono)
+        print(f"Cliente guardado: Nombre={nombre}, Dirección={direccion}, Teléfono={telefono}")
+        self.mostrar_mensaje("Cliente guardado con éxito.", wx.ICON_INFORMATION)
+
+        # Limpiar campos
+        self.txt_nombre.SetValue("")
+        self.txt_direccion.SetValue("")
+        self.txt_telefono.SetValue("")
+
+    def mostrar_mensaje(self, mensaje, tipo=wx.ICON_ERROR):
+        wx.MessageBox(mensaje, "Información", style=tipo)
+
+ 
+ 
