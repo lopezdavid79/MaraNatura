@@ -121,16 +121,20 @@ class DetalleVentaDialog(wx.Dialog):
         panel.SetSizerAndFit(self.sizer)
 
     def cargar_productos(self):
-        # Recorremos los IDs de los productos asociados a la venta
-        for producto_id in self.datos["productos"]:
+        """Carga los productos en la lista del diálogo de detalle."""
+        # Recorremos los productos asociados a la venta
+        for producto_info in self.datos["productos"]:
+            producto_id = producto_info["id_producto"]
+            cantidad = producto_info["cantidad"]
+
+            # Buscar el producto en self.productos_dict
             producto = next((p for p in self.productos_dict if p["id"] == producto_id), None)
+
             if producto:
-                item_text = f"ID: {producto['id']} - {producto['nombre']} - Stock: {producto['stock']} - Precio: ${producto['precio']}"
+                item_text = f"ID: {producto['id']} - {producto['nombre']} - Cantidad: {cantidad} - Precio: ${producto['precio']}"
                 self.lista_productos.Append(item_text)
             else:
                 print(f"Error: Producto con ID {producto_id} no encontrado.")
-
-
     def on_cerrar(self, event):
             self.EndModal(wx.ID_OK)  # Cierra el diálogo cuando se hace clic en el botón "Cerrar"
 # Clase para agregar una nueva venta con selección de producto por nombre
@@ -297,17 +301,7 @@ class AgregarVentaDialog(wx.Dialog):
         self.actualizar_lista_productos(filtro)
 
 #permite agregar un solo producto a la lista 
-    """
-    def agregar_producto(self, event):
-        seleccion = self.list_productos.GetStringSelection()
-        #print(f"Seleccion: {seleccion}")  # Imprime el valor de seleccion
-        if seleccion:
-            if seleccion not in self.productos_seleccionados:
-                self.productos_seleccionados.append(seleccion)
-                self.list_productos_seleccionados.Append(seleccion)
-                self.actualizar_total()
-    """
-
+    
     def eliminar_producto(self, event):
         seleccion = self.list_productos_seleccionados.GetSelection()
         if seleccion != wx.NOT_FOUND:
@@ -315,28 +309,6 @@ class AgregarVentaDialog(wx.Dialog):
             self.productos_seleccionados.remove(seleccion_str)
             self.list_productos_seleccionados.Delete(seleccion)
             self.actualizar_total()
-
-    def actualizar_total(self):
-        total = 0
-        for producto_str in self.productos_seleccionados:
-            # Extracción robusta del nombre del producto con expresión regular
-            match = re.match(r"(.+?) - Stock:", producto_str)
-            if match:
-                nombre_producto = match.group(1).strip()
-                datos_producto = self.productos_dict.get(nombre_producto)
-                if datos_producto:
-                    try:  # Manejo de errores para la conversión a float
-                        precio = float(datos_producto.get("precio", 0))
-                        total += precio
-                    except ValueError:
-                        print(f"Error: Precio no válido para {nombre_producto}")
-            else:
-                print(f"Error: Formato de producto incorrecto: {producto_str}")
-
-        self.lbl_total.SetLabel(f"${total:.2f}")
-        
-        self.Layout()  # Forzar la actualización del layout
-
 
     def navegar_productos(self, event):
         keycode = event.GetKeyCode()
@@ -357,48 +329,91 @@ class AgregarVentaDialog(wx.Dialog):
 
 
 
-
-    def guardar_venta(self, event):
-        cliente = self.txt_cliente.GetValue().strip()
-        
-        if not cliente or not self.productos_seleccionados:
-            wx.MessageBox("Debe ingresar un cliente y al menos un producto", "Error", wx.OK | wx.ICON_ERROR)
-            return
-
-        productos_ids = []
-        total_venta = 0  # Inicializar total de la venta
-
-        for producto_str in self.productos_seleccionados:
-            match = re.search(r"ID:\s*(\d+)", producto_str)  # Captura "ID: número"
-            if match:
-                producto_id = int(match.group(1))  # Convertir ID a entero
-
-                # Buscar el producto en self.productos_dict
-                datos_producto = next((p for p in self.productos_dict.values() if p["id"] == producto_id), None)
-                
-                if datos_producto:
-                    productos_ids.append(producto_id)
-                    total_venta += float(datos_producto["precio"])  # Sumar el precio del producto
-                else:
-                    print(f"⚠️ Error: Producto con ID {producto_id} no encontrado en productos_dict.")
-            else:
-                print(f"⚠️ Error: No se pudo extraer el ID del producto de '{producto_str}'")
-
-        if not productos_ids:
-            wx.MessageBox("No se pudieron registrar los productos correctamente.", "Error", wx.OK | wx.ICON_ERROR)
-            return
-
-        # Registrar la venta con los productos correctos
-        #print(f"Tipo de self.productos_dict: {type(self.productos_dict)}")
-        #print(f"alerta.Contenido de self.productos_dict: {self.productos_dict}")
-        gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict, total_venta)
-        ReproductorSonido.reproducir("Ok.wav")
-        wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
-        self.EndModal(wx.ID_OK)
 #permite agregar varios productos
     def agregar_producto(self, event):
         seleccion = self.list_productos.GetStringSelection()
         if seleccion:
-            self.productos_seleccionados.append(seleccion)
-            self.list_productos_seleccionados.Append(seleccion)
-            self.actualizar_total()
+            match = re.search(r"ID:\s*(\d+)", seleccion)
+            if match:
+                producto_id = int(match.group(1))
+
+                cantidad_str = wx.GetTextFromUser("Ingrese la cantidad:", "Cantidad", "1")
+
+                if cantidad_str:
+                    if cantidad_str.isdigit():
+                        cantidad = int(cantidad_str)
+
+                        producto_seleccionado = {
+                            "id_producto": producto_id,
+                            "cantidad": cantidad,
+                            "descripcion": seleccion
+                        }
+
+                        producto_existente = next((p for p in self.productos_seleccionados if p["id_producto"] == producto_id), None)
+
+                        if producto_existente:
+                            producto_existente["cantidad"] += cantidad
+                            self.actualizar_lista_seleccionados()
+                        else:
+                            self.productos_seleccionados.append(producto_seleccionado)
+                            self.list_productos_seleccionados.Append(f"{seleccion} - Cantidad: {cantidad}")
+                        self.actualizar_total()
+                    else:
+                        wx.MessageBox("Ingrese una cantidad válida.", "Error", wx.OK | wx.ICON_ERROR)
+                else:
+                    print("El usuario canceló el ingreso de cantidad")
+
+            else:
+                wx.MessageBox("No se pudo extraer el ID del producto.", "Error", wx.OK | wx.ICON_ERROR)
+        else:
+            wx.MessageBox("Seleccione un producto.", "Error", wx.OK | wx.ICON_ERROR)
+
+    def actualizar_lista_seleccionados(self):
+        self.list_productos_seleccionados.Clear()
+        for producto in self.productos_seleccionados:
+            self.list_productos_seleccionados.Append(f"{producto['descripcion']} - Cantidad: {producto['cantidad']}")
+
+    def actualizar_total(self):
+        total = 0
+        for producto in self.productos_seleccionados:
+            producto_id = producto["id_producto"]
+            cantidad = producto["cantidad"]
+            datos_producto = next((p for p in self.productos_dict.values() if p["id"] == producto_id), None)
+            if datos_producto:
+                total += float(datos_producto["precio"]) * cantidad
+
+        self.lbl_total.SetLabel(f"${total:.2f}")
+        self.Layout()
+
+    def guardar_venta(self, event):
+        cliente = self.txt_cliente.GetValue().strip()
+
+        if not cliente or not self.productos_seleccionados:
+            wx.MessageBox("Debe ingresar un cliente y al menos un producto", "Error", wx.OK | wx.ICON_ERROR)
+            return
+
+        productos_con_cantidad = []
+        total_venta = 0
+
+        for producto in self.productos_seleccionados:
+            producto_id = producto["id_producto"]
+            cantidad = producto["cantidad"]
+            datos_producto = next((p for p in self.productos_dict.values() if p["id"] == producto_id), None)
+
+            if datos_producto:
+                productos_con_cantidad.append({
+                    "id_producto": producto_id,
+                    "cantidad": cantidad
+                })
+                total_venta += float(datos_producto["precio"]) * cantidad
+            else:
+                print(f"⚠️ Error: Producto con ID {producto_id} no encontrado en productos_dict.")
+
+        if not productos_con_cantidad:
+            wx.MessageBox("No se pudieron registrar los productos correctamente.", "Error", wx.OK | wx.ICON_ERROR)
+            return
+
+        self.gestion_ventas.registrar_venta(None, cliente, productos_con_cantidad, self.productos_dict, total_venta)
+        ReproductorSonido.reproducir("Ok.wav")
+        wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
+        self.EndModal(wx.ID_OK)

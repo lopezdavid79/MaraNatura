@@ -52,9 +52,9 @@ class GestionVentas:
             return 1
         return max(venta['id'] for venta in self.ventas) + 1
 
-    def registrar_venta(self, fecha, cliente, productos_ids, productos_dict, total_venta):
+    def registrar_venta(self, fecha, cliente, productos_con_cantidad, productos_dict, total_venta):
         nuevo_id = len(self.ventas) + 1  # Asigna el siguiente ID disponible
-        nueva_venta = Venta(nuevo_id, fecha, cliente, productos_ids)
+        nueva_venta = Venta(nuevo_id, fecha, cliente, productos_con_cantidad)  # Pasa la lista de diccionarios
 
         # Guardar el total directamente en el diccionario de la venta
         venta_dict = nueva_venta.__dict__
@@ -62,42 +62,42 @@ class GestionVentas:
 
         # Guarda el diccionario de la venta en la lista de ventas
         self.ventas.append(venta_dict)
-        
+
         # Guardar los cambios de la venta en persistencia
         self.guardar_datos()
 
-            # **Actualizar stock**
-        self.actualizar_stock(productos_ids, productos_dict)
-        
+        # Actualizar stock
+        self.actualizar_stock(productos_con_cantidad, productos_dict)  # Pasa la lista de diccionarios
+
         #print(f"Venta guardada: {venta_dict}")  # Imprime la venta registrada para debug
         return nueva_venta
-    
-    
-    def actualizar_stock(self, productos_ids, productos_dict):
-        print(f"Venta guardada: {productos_dict}")  # Imprime la venta registrada para debug
-        for producto_id in productos_ids:
-            if producto_id in productos_dict:  # No convertir a cadena aquí
-                producto_data = productos_dict[producto_id]
 
-                if producto_data['stock'] > 0:
-                    producto_data['stock'] -= 1
+    def actualizar_stock(self, productos_con_cantidad, productos_dict):
+        """Actualiza el stock de los productos vendidos."""
+        for producto_info in productos_con_cantidad:
+            producto_id = producto_info["id_producto"]
+            cantidad_vendida = producto_info["cantidad"]
+
+            for producto_almacenado in productos_dict.values():
+                if producto_almacenado["id"] == producto_id:
+                    # Actualizar el stock
+                    producto_almacenado["stock"] -= cantidad_vendida
+                    print(f"Stock actualizado para producto ID {producto_id}: Nuevo stock = {producto_almacenado['stock']}")
+                    # Guardar los cambios en el archivo JSON
                     self.guardar_productos(productos_dict)
-                    #print(f"Venta guardada: {productos_dict}")  # Imprime la venta registrada para debug
-                    #print(f"Stock actualizado para {producto_data['nombre']}: {producto_data['stock']} unidades restantes.")
-                else:
-                    print(f"Stock insuficiente para el producto: {producto_data['nombre']}")
-            else:
-                print(f"Producto no encontrado con ID: {producto_id}")
-        
-    
-    def guardar_productos(self, productos_dict):
-        try:
-            with open(self.nombre_archivo_productos, 'w', encoding='utf-8') as archivo:
-                    json.dump(productos_dict, archivo, indent=4, ensure_ascii=False)
-            print("Stock actualizado y guardado correctamente.")
-        except Exception as e:
-            print(f"Error al guardar productos: {e}")
+                    break # Para evitar seguir iterando si ya se encontró el producto
+            else: # Se ejecuta si el for termina sin un break.
+                print(f"⚠️ Error: Producto con ID {producto_id} no encontrado en productos_dict.")        
 
+    def guardar_productos(self, productos_dict):
+            """Guarda los productos en el archivo JSON."""
+            ruta_completa = self._obtener_ruta_completa("productos.json") # Se obtiene la ruta del archivo.
+            try:
+                with open(ruta_completa, 'w', encoding='utf-8') as archivo:
+                    json.dump(productos_dict, archivo, indent=4, ensure_ascii=False)
+                print("Stock actualizado y guardado correctamente.")
+            except Exception as e:
+                print(f"Error al guardar productos: {e}")
 
     def obtener_todos(self):
         return {str(index + 1): venta for index, venta in enumerate(self.ventas)}

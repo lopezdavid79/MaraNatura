@@ -80,14 +80,14 @@
         "id": 32542,
         "nombre": "Mistureba jabones en barra ",
         "detalle": "Cuida la piel de los más pequeños",
-        "stock": 1,
+        "stock": 2,
         "precio": 8900.0
     },
     "78937": {
         "id": 78937,
         "nombre": "Jabones en barra cremosos y refrescantes Homem ",
         "detalle": "Cuidado del hombre",
-        "stock": 1,
+        "stock": 0,
         "precio": 11170.0
     }
 }
