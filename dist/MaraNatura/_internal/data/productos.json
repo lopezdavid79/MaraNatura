@@ -1,0 +1,88 @@
+{
+    "902": {
+        "id": 902,
+        "nombre": "jabones nature",
+        "stock": 8,
+        "precio": 6000.0
+    },
+    "911": {
+        "id": 911,
+        "nombre": "Rolón sin olor ",
+        "stock": 9,
+        "precio": 4500.0,
+        "detalle": "no disponible"
+    },
+    "933": {
+        "id": 933,
+        "nombre": "Jabones Eco",
+        "stock": 9,
+        "precio": 6999.0,
+        "detalle": "No disponible"
+    },
+    "903": {
+        "id": 903,
+        "nombre": "Bs Limón",
+        "stock": 8,
+        "precio": 23000.0,
+        "detalle": "No disponible"
+    },
+    "932": {
+        "id": 932,
+        "nombre": "Bs Mango",
+        "stock": 9,
+        "precio": 23999.0
+    },
+    "801": {
+        "id": 801,
+        "nombre": "Perfume pOtence",
+        "stock": 3,
+        "precio": 44000.0
+    },
+    "802": {
+        "id": 802,
+        "nombre": "Perfume Eco",
+        "stock": 3,
+        "precio": 54000.0
+    },
+    "803": {
+        "id": 803,
+        "nombre": "Perfume Todo Día ",
+        "stock": 2,
+        "precio": 43000.0,
+        "detalle": "No disponible"
+    },
+    "981": {
+        "id": 981,
+        "nombre": "Bs Mango Rojo",
+        "stock": 9,
+        "precio": 23999.0
+    },
+    "833": {
+        "id": 833,
+        "nombre": "Bs Flor de liz",
+        "detalle": "floral sutil",
+        "stock": 10,
+        "precio": 23999.0
+    },
+    "835": {
+        "id": 835,
+        "nombre": "jabones ",
+        "detalle": "sin detale",
+        "stock": 11,
+        "precio": 6700.0
+    },
+    "999": {
+        "id": 999,
+        "nombre": "Perfume Super ",
+        "detalle": "no disponible",
+        "stock": 10,
+        "precio": 55000.0
+    },
+    "9999": {
+        "id": 9999,
+        "nombre": "perfume 4",
+        "detalle": "sin detalle",
+        "stock": 10,
+        "precio": 45999.0
+    }
+}

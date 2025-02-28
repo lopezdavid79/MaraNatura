@@ -270,29 +270,19 @@ class AgregarVentaDialog(wx.Dialog):
             wx.CallAfter(self.lista_clientes.SetLabel, seleccion)
 
     def cargar_productos(self):
-        #ruta_completa = self.gestion_ventas._obtener_ruta_completa(self.nombre_archivo_productos) #obtenemos la ruta absoluta de gestion_ventas.
-        ruta_completa = os.path.join(os.getcwd(), "data", "productos.json")  # Construcción segura de 
-        print(f"Ruta completa del archivo: {ruta_completa}")
-        try:
-            if not os.path.exists(ruta_completa): #verificamos la ruta completa.
-                wx.MessageBox(f"El archivo {ruta_completa} no se encuentra.", "Error", wx.OK | wx.ICON_ERROR)
-                return {}
-
-            with open(ruta_completa, 'r', encoding='utf-8') as archivo: #abrimos el archivo con la ruta completa y codificacion utf-8.
-                try:
-                    productos_dict = json.load(archivo)
-                    print("Contenido de productos_dict:", productos_dict)
-                    return productos_dict
-                except (TypeError, KeyError) as e:
-                    wx.MessageBox(f"Error al cargar productos: Formato JSON incorrecto. {e}", "Error", wx.OK | wx.ICON_ERROR)
-                    return {}
-                except json.JSONDecodeError as e:
-                    wx.MessageBox(f"Error al decodificar JSON: {e}", "Error", wx.OK | wx.ICON_ERROR)
-                    return {}
-        except Exception as e:
-            wx.MessageBox(f"Error inesperado al cargar productos: {e}", "Error", wx.OK | wx.ICON_ERROR)
-            return {}
-
+        self.list_productos.Clear()
+        productos = gestion_productos.obtener_productos()  # Suponiendo que devuelve el diccionario JSON
+        #print("Tipo de 'productos':", type(productos))  
+        productos_dict = {}  # Se crea un diccionario vacío.
+        
+        if productos:
+            for producto in productos.values():  # Iteramos sobre los valores del diccionario
+                item_text = f"ID: {producto['id']} - {producto['nombre']} - Stock: {producto['stock']} - Precio: ${producto['precio']}"
+                self.list_productos.Append(item_text)
+                productos_dict[producto['id']] = producto  # Usamos el ID como clave
+        
+        return productos_dict  # Se retorna el diccionario.
+        
     def actualizar_lista_productos(self, filtro=""):
         self.list_productos.Clear()
         for producto in self.productos_dict.values():
@@ -306,6 +296,8 @@ class AgregarVentaDialog(wx.Dialog):
         filtro = self.txt_buscar_producto.GetValue()
         self.actualizar_lista_productos(filtro)
 
+#permite agregar un solo producto a la lista 
+    """
     def agregar_producto(self, event):
         seleccion = self.list_productos.GetStringSelection()
         #print(f"Seleccion: {seleccion}")  # Imprime el valor de seleccion
@@ -314,6 +306,7 @@ class AgregarVentaDialog(wx.Dialog):
                 self.productos_seleccionados.append(seleccion)
                 self.list_productos_seleccionados.Append(seleccion)
                 self.actualizar_total()
+    """
 
     def eliminar_producto(self, event):
         seleccion = self.list_productos_seleccionados.GetSelection()
@@ -397,8 +390,15 @@ class AgregarVentaDialog(wx.Dialog):
 
         # Registrar la venta con los productos correctos
         #print(f"Tipo de self.productos_dict: {type(self.productos_dict)}")
-        #print(f"Contenido de self.productos_dict: {self.productos_dict}")
+        #print(f"alerta.Contenido de self.productos_dict: {self.productos_dict}")
         gestion_ventas.registrar_venta(None, cliente, productos_ids, self.productos_dict, total_venta)
         ReproductorSonido.reproducir("Ok.wav")
         wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
         self.EndModal(wx.ID_OK)
+#permite agregar varios productos
+    def agregar_producto(self, event):
+        seleccion = self.list_productos.GetStringSelection()
+        if seleccion:
+            self.productos_seleccionados.append(seleccion)
+            self.list_productos_seleccionados.Append(seleccion)
+            self.actualizar_total()

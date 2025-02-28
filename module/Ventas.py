@@ -11,7 +11,7 @@ class Venta:
         self.productos = productos
 
 class GestionVentas:
-    def __init__(self, nombre_archivo_ventas='ventas.json', nombre_archivo_productos='productos.json'):
+    def __init__(self, nombre_archivo_ventas='ventas.json', nombre_archivo_productos='data/productos.json'):
         self.nombre_archivo_ventas = nombre_archivo_ventas
         self.nombre_archivo_productos = nombre_archivo_productos
         self.ventas = self.cargar_datos(self.nombre_archivo_ventas)
@@ -68,32 +68,32 @@ class GestionVentas:
 
             # **Actualizar stock**
         self.actualizar_stock(productos_ids, productos_dict)
-
+        
         #print(f"Venta guardada: {venta_dict}")  # Imprime la venta registrada para debug
         return nueva_venta
-
-
+    
+    
     def actualizar_stock(self, productos_ids, productos_dict):
+        print(f"Venta guardada: {productos_dict}")  # Imprime la venta registrada para debug
         for producto_id in productos_ids:
-            producto_id_str = str(producto_id)  # Asegura que sea string para evitar errores
+            if producto_id in productos_dict:  # No convertir a cadena aquí
+                producto_data = productos_dict[producto_id]
 
-            if producto_id_str in productos_dict:
-                producto_data = productos_dict[producto_id_str]
-            
                 if producto_data['stock'] > 0:
                     producto_data['stock'] -= 1
-                    print(f"Stock actualizado para {producto_data['nombre']}: {producto_data['stock']} unidades restantes.")
+                    self.guardar_productos(productos_dict)
+                    #print(f"Venta guardada: {productos_dict}")  # Imprime la venta registrada para debug
+                    #print(f"Stock actualizado para {producto_data['nombre']}: {producto_data['stock']} unidades restantes.")
                 else:
                     print(f"Stock insuficiente para el producto: {producto_data['nombre']}")
             else:
                 print(f"Producto no encontrado con ID: {producto_id}")
-
-        self.guardar_productos(productos_dict)  # Guardar cambios en el archivo JSON
-
+        
+    
     def guardar_productos(self, productos_dict):
         try:
             with open(self.nombre_archivo_productos, 'w', encoding='utf-8') as archivo:
-                json.dump(productos_dict, archivo, indent=4, ensure_ascii=False)
+                    json.dump(productos_dict, archivo, indent=4, ensure_ascii=False)
             print("Stock actualizado y guardado correctamente.")
         except Exception as e:
             print(f"Error al guardar productos: {e}")

@@ -101,3 +101,7 @@ class GestionProductos:
 
     def obtener_todos(self):
         return list(self.productos.values())  # Devuelve una lista con los valores del diccionario
+
+
+    def obtener_productos(self):
+        return self.productos.copy()  # Devuelve una copia del diccionario original
