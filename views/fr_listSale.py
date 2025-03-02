@@ -4,7 +4,7 @@ import json
 import re
 import wx
 import wx.lib.mixins.listctrl as listmix
-
+from module.eventos import EVT_ACTUALIZAR_PRODUCTOS, ActualizarProductosEvent  # Importar el evento
 from module.ReproductorSonido import ReproductorSonido
 from module.GestionCliente import GestionClientes
 from module.Ventas import GestionVentas, Venta
@@ -78,9 +78,9 @@ class ListSale(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         ReproductorSonido.reproducir("screenCurtainOn.wav")
         dialogo = AgregarVentaDialog(self,gestion_ventas        )
         if dialogo.ShowModal() == wx.ID_OK:
-            self.cargar_ventas()  # Actualiza la lista después de agregar una venta
+            self.cargar_ventas()  # Actualiza la lista después de agregar una venta        
         dialogo.Destroy()
-    
+
     def cerrar_ventana(self, event):
         ReproductorSonido.reproducir("screenCurtainOff.wav")
         self.Close()
@@ -138,11 +138,14 @@ class DetalleVentaDialog(wx.Dialog):
     def on_cerrar(self, event):
             self.EndModal(wx.ID_OK)  # Cierra el diálogo cuando se hace clic en el botón "Cerrar"
 # Clase para agregar una nueva venta con selección de producto por nombre
-
+import wx.lib.newevent
+# 🔥 Crear un evento personalizado para actualizar la lista de productos en otra ventana
+ActualizarProductosEvent, EVT_ACTUALIZAR_PRODUCTOS = wx.lib.newevent.NewEvent()
 
 class AgregarVentaDialog(wx.Dialog):
     def __init__(self, parent,gestion_ventas):
-        super().__init__(parent, title="Nueva Venta", size=(400, 400))
+        super().__init__(parent, title="Nueva Venta", size=(400, 400))      
+        self.parent_productos = parent  # Referencia a la ventana de productos
         panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.nombre_archivo_productos = 'data/productos.json'
@@ -222,7 +225,10 @@ class AgregarVentaDialog(wx.Dialog):
         self.SetAcceleratorTable(accel_tbl)
  
 
-
+    def ShowModal(self):
+        self.productos_dict = self.cargar_productos()  # Recargar productos antes de mostrar
+        self.actualizar_lista_productos()
+        return super().ShowModal()
 
     def cargar_clientes(self):
         """Carga los clientes en la lista."""
@@ -337,32 +343,45 @@ class AgregarVentaDialog(wx.Dialog):
             if match:
                 producto_id = int(match.group(1))
 
-                cantidad_str = wx.GetTextFromUser("Ingrese la cantidad:", "Cantidad", "1")
+                # Obtener el producto del diccionario de productos
+                producto_info = next((p for p in self.productos_dict.values() if p["id"] == producto_id), None)
 
-                if cantidad_str:
-                    if cantidad_str.isdigit():
-                        cantidad = int(cantidad_str)
+                if producto_info:
+                    # Verificar el stock
+                    if producto_info["stock"] > 0:
+                        cantidad_str = wx.GetTextFromUser("Ingrese la cantidad:", "Cantidad", "1")
 
-                        producto_seleccionado = {
-                            "id_producto": producto_id,
-                            "cantidad": cantidad,
-                            "descripcion": seleccion
-                        }
+                        if cantidad_str:
+                            if cantidad_str.isdigit():
+                                cantidad = int(cantidad_str)
 
-                        producto_existente = next((p for p in self.productos_seleccionados if p["id_producto"] == producto_id), None)
+                                # Verificar que la cantidad no sea mayor al stock
+                                if cantidad <= producto_info["stock"]:
+                                    producto_seleccionado = {
+                                        "id_producto": producto_id,
+                                        "cantidad": cantidad,
+                                        "descripcion": seleccion
+                                    }
 
-                        if producto_existente:
-                            producto_existente["cantidad"] += cantidad
-                            self.actualizar_lista_seleccionados()
+                                    producto_existente = next((p for p in self.productos_seleccionados if p["id_producto"] == producto_id), None)
+
+                                    if producto_existente:
+                                        producto_existente["cantidad"] += cantidad
+                                        self.actualizar_lista_seleccionados()
+                                    else:
+                                        self.productos_seleccionados.append(producto_seleccionado)
+                                        self.list_productos_seleccionados.Append(f"{seleccion} - Cantidad: {cantidad}")
+                                    self.actualizar_total()
+                                else:
+                                    wx.MessageBox("La cantidad ingresada es mayor al stock disponible.", "Error", wx.OK | wx.ICON_ERROR)
+                            else:
+                                wx.MessageBox("Ingrese una cantidad válida.", "Error", wx.OK | wx.ICON_ERROR)
                         else:
-                            self.productos_seleccionados.append(producto_seleccionado)
-                            self.list_productos_seleccionados.Append(f"{seleccion} - Cantidad: {cantidad}")
-                        self.actualizar_total()
+                            print("El usuario canceló el ingreso de cantidad")
                     else:
-                        wx.MessageBox("Ingrese una cantidad válida.", "Error", wx.OK | wx.ICON_ERROR)
+                        wx.MessageBox("No hay stock disponible para este producto.", "Error", wx.OK | wx.ICON_ERROR)
                 else:
-                    print("El usuario canceló el ingreso de cantidad")
-
+                    wx.MessageBox("Producto no encontrado.", "Error", wx.OK | wx.ICON_ERROR)
             else:
                 wx.MessageBox("No se pudo extraer el ID del producto.", "Error", wx.OK | wx.ICON_ERROR)
         else:
@@ -414,6 +433,19 @@ class AgregarVentaDialog(wx.Dialog):
             return
 
         self.gestion_ventas.registrar_venta(None, cliente, productos_con_cantidad, self.productos_dict, total_venta)
+        
         ReproductorSonido.reproducir("Ok.wav")
         wx.MessageBox(f"Venta registrada con éxito. Total: ${total_venta:.2f}", "Éxito", wx.OK | wx.ICON_INFORMATION)
+        # Crear el evento personalizado
+        e = ActualizarProductosEvent()
+
+        # Enviar el evento a la ventana de productos
+        wx.PostEvent(self.parent_productos, e)# Crear el evento personalizado
+        e = ActualizarProductosEvent()
+
+        # Enviar el evento a la ventana de productos
+        wx.PostEvent(self.parent_productos, ActualizarProductosEvent())
+        # 🔥 Recargar productos después de la venta
+        self.productos_dict = self.cargar_productos()  # Recargar desde JSON
+        self.actualizar_lista_productos()  # Actualizar la interfaz con el stock nuevo
         self.EndModal(wx.ID_OK)

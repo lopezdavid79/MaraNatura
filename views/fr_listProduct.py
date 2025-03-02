@@ -1,8 +1,10 @@
 import wx
 import wx.lib.mixins.listctrl as listmix
+from module.eventos import EVT_ACTUALIZAR_PRODUCTOS, ActualizarProductosEvent  # Importar el evento
 from module.ReproductorSonido import ReproductorSonido
 from module.GestionProducto import GestionProductos
 from Views.fr_producto import VentanaProducto
+from Views.fr_listSale import AgregarVentaDialog
 # Inicialización de la gestión de productos
 gestion_productos = GestionProductos()
 
@@ -10,8 +12,12 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, id=None, title="Nuevo Producto", *args, **kwds):
         super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds) # Corrección
 
-
+        self.parent_venta = parent  # Guarda la referencia a la ventana de ventas
         panel = wx.Panel(self)
+        # Registra el manejador del evento personalizado
+        self.Bind(EVT_ACTUALIZAR_PRODUCTOS, lambda event: self.actualizar_lista_productos(event))
+
+ 
         
         # Crear la lista de productos
         self.list_ctrl = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.BORDER_SUNKEN, pos=(10, 10), size=(460, 250))
@@ -116,7 +122,9 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
     def on_close(self, event):
         ReproductorSonido.reproducir("screenCurtainOff.wav")
         self.Close()
-                
+    
+    
+
 class DetalleProductoDialog(wx.Dialog):
     def __init__(self, parent, id_producto, datos):
         super().__init__(parent, title="Detalle del Producto", size=(300, 250))
@@ -163,6 +171,7 @@ class DetalleProductoDialog(wx.Dialog):
             if dialogo.ShowModal() == wx.ID_OK:
                 self.EndModal(wx.ID_OK)  # Cierra el diálogo y recarga la lista
             dialogo.Destroy()
+
 
 
 
