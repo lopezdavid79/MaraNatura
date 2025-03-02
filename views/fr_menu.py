@@ -1,4 +1,5 @@
 import wx
+from backapp import BackupFrame
 from reports.rp_ventas import  ReporteVentasFrame
 from Views.fr_listProduct import ListaProductos
 from Views.fr_producto import VentanaProducto
@@ -40,11 +41,20 @@ class Principal(wx.Frame):
         report_sale_item = wx.MenuItem(sales_menu, wx.ID_ANY, "Reporte de Ventas")
         sales_menu.Append(new_sale_item)
         sales_menu.Append(report_sale_item)
+# Crear el menú "Opciones"
+        mas_menu = wx.Menu()
+        backapp_item = wx.MenuItem(mas_menu, wx.ID_ANY, "BackApps BD")
+        mas_menu.Append(backapp_item)
+        mas_menu.AppendSeparator()
+        exit_item = wx.MenuItem(mas_menu, wx.ID_ANY, "Salir")
+        mas_menu.Append(exit_item)
 
+        
         # Añadir los menús a la barra de menú
         menubar.Append(file_menu, "Productos")
         menubar.Append(client_menu, "Clientes")  # Agregamos la sección de clientes
         menubar.Append(sales_menu, "Ventas")
+        menubar.Append(mas_menu, "Opciones")
         self.SetMenuBar(menubar)
 
         # Enlazar los eventos de los menús
@@ -55,6 +65,7 @@ class Principal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_list_client, list_client_item)  # Lista de Clientes
         self.Bind(wx.EVT_MENU, self.on_list_sale, new_sale_item)
         self.Bind(wx.EVT_MENU, self.on_report_sale, report_sale_item)
+        self.Bind(wx.EVT_MENU, self.on_backapps, backapp_item)
         # Reproducir sonido de inicio
         ReproductorSonido.reproducir("Inicio.wav")
         self.SetTitle("Gestión Ventas de Mara Natura")
@@ -92,6 +103,14 @@ class Principal(wx.Frame):
         list_sale_form.Show()
 
 
+
+    def on_list_sale(self, event):
+        """Abre el formulario de lista de ventas."""
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
+        list_sale_form = ListSale(self, id=None, title="Lista de Ventas")
+        list_sale_form.Show()
+    
+
     def on_report_sale(self, event):
         """Abre el formulario de reporte de ventas."""
         ReproductorSonido.reproducir("screenCurtainOn.wav")
@@ -99,7 +118,7 @@ class Principal(wx.Frame):
         report_sale_form.Show()
 
     
-
+    
     def on_exit(self, event):
         """Cierra la aplicación."""
         ReproductorSonido.reproducir("Salir.wav")
@@ -107,3 +126,11 @@ class Principal(wx.Frame):
         #self.Close()
         wx.Exit()
         
+
+
+    def on_backapps(self, event):
+        """Abre el formulario de lista de ventas."""
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
+
+        backapps_form = BackupFrame(self, title="BackApps Bs")
+        backapps_form.Show()
