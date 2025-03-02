@@ -4,9 +4,7 @@ import wx
 import wx.lib.mixins.listctrl as listmix
 from module.ReproductorSonido import ReproductorSonido
 from module.GestionCliente import GestionClientes
-#from Views.fr_cliente import VentanaCliente
-
-# Inicialización de la gestión de clientes
+#from Views.fr_cliente import VentanaCliente# Inicialización de la gestión de clientes
 gestion_clientes = GestionClientes()
 
 class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
@@ -308,5 +306,3 @@ class AgregarClienteDialog(wx.Dialog):
     def mostrar_mensaje(self, mensaje, tipo=wx.ICON_ERROR):
         wx.MessageBox(mensaje, "Información", style=tipo)
 
- 
- 

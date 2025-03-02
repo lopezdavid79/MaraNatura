@@ -31,7 +31,7 @@
         "id": 156229,
         "nombre": "Kaiak sonar eau de toilette femenino ",
         "detalle": "Transforma en fragancia los sonidos del mar",
-        "stock": 2,
+        "stock": 1,
         "precio": 51120.0
     },
     "156226": {
@@ -87,7 +87,7 @@
         "id": 78937,
         "nombre": "Jabones en barra cremosos y refrescantes Homem ",
         "detalle": "Cuidado del hombre",
-        "stock": 1,
+        "stock": 0,
         "precio": 11170.0
     }
 }

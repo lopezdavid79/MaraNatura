@@ -287,7 +287,7 @@ class AgregarVentaDialog(wx.Dialog):
         
         if productos:
             for producto in productos.values():  # Iteramos sobre los valores del diccionario
-                item_text = f"ID: {producto['id']} - {producto['nombre']} - Stock: {producto['stock']} - Precio: ${producto['precio']}"
+                item_text = f"Código: {producto['id']} - {producto['nombre']} - Stock: {producto['stock']} - Precio: ${producto['precio']}"
                 self.list_productos.Append(item_text)
                 productos_dict[producto['id']] = producto  # Usamos el ID como clave
         

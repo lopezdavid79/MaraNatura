@@ -1,4 +1,5 @@
 import wx
+from reports.rp_ventas import  ReporteVentasFrame
 from Views.fr_listProduct import ListaProductos
 from Views.fr_producto import VentanaProducto
 from Views.fr_listSale import ListSale
@@ -36,7 +37,9 @@ class Principal(wx.Frame):
         # Crear el menú "Ventas"
         sales_menu = wx.Menu()
         new_sale_item = wx.MenuItem(sales_menu, wx.ID_ANY, "Lista de Ventas")
+        report_sale_item = wx.MenuItem(sales_menu, wx.ID_ANY, "Reporte de Ventas")
         sales_menu.Append(new_sale_item)
+        sales_menu.Append(report_sale_item)
 
         # Añadir los menús a la barra de menú
         menubar.Append(file_menu, "Productos")
@@ -51,6 +54,7 @@ class Principal(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_new_client, new_client_item)  # Nuevo Cliente
         self.Bind(wx.EVT_MENU, self.on_list_client, list_client_item)  # Lista de Clientes
         self.Bind(wx.EVT_MENU, self.on_list_sale, new_sale_item)
+        self.Bind(wx.EVT_MENU, self.on_report_sale, report_sale_item)
         # Reproducir sonido de inicio
         ReproductorSonido.reproducir("Inicio.wav")
         self.SetTitle("Gestión Ventas de Mara Natura")
@@ -78,11 +82,23 @@ class Principal(wx.Frame):
         list_client_form = ListaClientes(self, id=None, title="Lista de Clientes")
         list_client_form.Show()
 
+
+
+    
     def on_list_sale(self, event):
         """Abre el formulario de lista de ventas."""
         ReproductorSonido.reproducir("screenCurtainOn.wav")
         list_sale_form = ListSale(self, id=None, title="Lista de Ventas")
         list_sale_form.Show()
+
+
+    def on_report_sale(self, event):
+        """Abre el formulario de reporte de ventas."""
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
+        report_sale_form =ReporteVentasFrame (self, title="reporte de Ventas")
+        report_sale_form.Show()
+
+    
 
     def on_exit(self, event):
         """Cierra la aplicación."""
