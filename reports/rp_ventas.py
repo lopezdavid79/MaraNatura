@@ -1,51 +1,8 @@
 import wx
+import sys
 import json
 from datetime import datetime
 import os
-
-def cargar_datos_ventas(ruta_archivo):
-    """Carga los datos de ventas desde un archivo JSON."""
-    try:
-        with open(ruta_archivo, 'r') as archivo:
-            data = json.load(archivo)
-        return data
-    except FileNotFoundError:
-        wx.MessageBox(f"Error: No se encontró el archivo {ruta_archivo}", "Error", wx.OK | wx.ICON_ERROR)
-        return None
-    except json.JSONDecodeError:
-        wx.MessageBox(f"Error: El archivo {ruta_archivo} no contiene JSON válido", "Error", wx.OK | wx.ICON_ERROR)
-        return None
-
-def cargar_datos_productos(ruta_archivo):
-    """Carga los datos de productos desde un archivo JSON."""
-    try:
-        with open(ruta_archivo, 'r') as archivo:
-            data = json.load(archivo)
-        return data
-    except FileNotFoundError:
-        wx.MessageBox(f"Error: No se encontró el archivo {ruta_archivo}", "Error", wx.OK | wx.ICON_ERROR)
-        return None
-    except json.JSONDecodeError:
-        wx.MessageBox(f"Error: El archivo {ruta_archivo} no contiene JSON válido", "Error", wx.OK | wx.ICON_ERROR)
-        return None
-
-def generar_reporte_ventas(data, fecha_inicio, fecha_fin):
-    """Genera un reporte de ventas filtrado por un rango de fechas."""
-    reporte = []
-    formato_fecha = "%d/%m/%Y %H:%M:%S"
-
-    try:
-        fecha_inicio = datetime.strptime(fecha_inicio, formato_fecha)
-        fecha_fin = datetime.strptime(fecha_fin, formato_fecha)
-    except ValueError:
-        return "Error: Formato de fecha incorrecto. Use DD/MM/AAAA HH:MM:SS"
-
-    for venta in data:
-        fecha_venta = datetime.strptime(venta["fecha"], formato_fecha)
-        if fecha_inicio <= fecha_venta <= fecha_fin:
-            reporte.append(venta)
-
-    return reporte
 
 class ReporteVentasFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -53,18 +10,11 @@ class ReporteVentasFrame(wx.Frame):
 
         self.panel = wx.Panel(self)
 
-        # Cargar datos desde el archivo ventas.json
-        ruta_archivo_ventas = os.path.join("data", "ventas.json")
-        self.data_ventas = cargar_datos_ventas(ruta_archivo_ventas)
+        # Cargar datos desde los archivos JSON
+        self.data_ventas = self.cargar_datos_ventas()
+        self.data_productos = self.cargar_datos_productos()
 
-        if self.data_ventas is None:
-            return  # Salir si no se pudieron cargar los datos
-
-        # Cargar datos desde el archivo productos.json
-        ruta_archivo_productos = os.path.join("data", "productos.json")
-        self.data_productos = cargar_datos_productos(ruta_archivo_productos)
-
-        if self.data_productos is None:
+        if self.data_ventas is None or self.data_productos is None:
             return  # Salir si no se pudieron cargar los datos
 
         # Panel con borde para las fechas
@@ -89,13 +39,69 @@ class ReporteVentasFrame(wx.Frame):
         self.reporte_text = wx.TextCtrl(self.panel, pos=(10, 110), size=(580, 280), style=wx.TE_MULTILINE | wx.TE_READONLY)
 
         self.Show(True)
+    def _obtener_ruta_completa(self, nombre_archivo):
+        """Obtiene la ruta completa al archivo JSON."""
+        if getattr(sys, 'frozen', False):
+            # Estamos en un paquete PyInstaller
+            ruta_base = sys._MEIPASS
+        else:
+            # Estamos ejecutando desde el código fuente
+            ruta_base = os.path.abspath('.')
+        return os.path.join(ruta_base, 'data', nombre_archivo)
+
+    
+    def cargar_datos_ventas(self):
+        """Carga los datos de ventas desde un archivo JSON."""
+        ruta_archivo = self._obtener_ruta_completa("ventas.json")
+        try:
+            with open(ruta_archivo, 'r') as archivo:
+                data = json.load(archivo)
+            return data
+        except FileNotFoundError:
+            wx.MessageBox(f"Error: No se encontró el archivo {ruta_archivo}", "Error", wx.OK | wx.ICON_ERROR)
+            return None
+        except json.JSONDecodeError:
+            wx.MessageBox(f"Error: El archivo {ruta_archivo} no contiene JSON válido", "Error", wx.OK | wx.ICON_ERROR)
+            return None
+
+    def cargar_datos_productos(self):
+        """Carga los datos de productos desde un archivo JSON."""
+        ruta_archivo = self._obtener_ruta_completa("productos.json")    
+        try:
+            with open(ruta_archivo, 'r') as archivo:
+                data = json.load(archivo)
+            return data
+        except FileNotFoundError:
+            wx.MessageBox(f"Error: No se encontró el archivo {ruta_archivo}", "Error", wx.OK | wx.ICON_ERROR)
+            return None
+        except json.JSONDecodeError:
+            wx.MessageBox(f"Error: El archivo {ruta_archivo} no contiene JSON válido", "Error", wx.OK | wx.ICON_ERROR)
+            return None
+
+    def generar_reporte_ventas(self, fecha_inicio, fecha_fin):
+        """Genera un reporte de ventas filtrado por un rango de fechas."""
+        reporte = []
+        formato_fecha = "%d/%m/%Y %H:%M:%S"
+
+        try:
+            fecha_inicio = datetime.strptime(fecha_inicio, formato_fecha)
+            fecha_fin = datetime.strptime(fecha_fin, formato_fecha)
+        except ValueError:
+            return "Error: Formato de fecha incorrecto. Use DD/MM/AAAA HH:MM:SS"
+
+        for venta in self.data_ventas:
+            fecha_venta = datetime.strptime(venta["fecha"], formato_fecha)
+            if fecha_inicio <= fecha_venta <= fecha_fin:
+                reporte.append(venta)
+
+        return reporte
 
     def on_generar_reporte(self, event):
         """Genera el reporte y lo muestra en el área de texto."""
         fecha_inicio = self.fecha_inicio_ctrl.GetValue()
         fecha_fin = self.fecha_fin_ctrl.GetValue()
 
-        reporte_generado = generar_reporte_ventas(self.data_ventas, fecha_inicio, fecha_fin)
+        reporte_generado = self.generar_reporte_ventas(fecha_inicio, fecha_fin)
 
         if isinstance(reporte_generado, list):
             # Formatear el reporte como texto legible
@@ -119,3 +125,9 @@ class ReporteVentasFrame(wx.Frame):
     def on_cerrar(self, event):
         """Cierra la ventana."""
         self.Close(True)
+
+if __name__ == '__main__':
+    app = wx.App()
+    frame = ReporteVentasFrame(None, "Reporte de Ventas")
+    frame.Show()
+    app.MainLoop()

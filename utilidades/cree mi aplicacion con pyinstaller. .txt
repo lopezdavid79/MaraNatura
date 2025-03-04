@@ -1,0 +1,9 @@
+
+
+cree mi aplicacion con pyinstaller. 
+pyinstaller --onedir --windowed --add-data "data;data" --add-data "Sounds;Sounds" app.py
+
+
+
+pyinstaller --onedir --windowed --icon=MaraNatura.ico --add-data "data;data" --add-data "Sounds;Sounds" MaraNatura.py
+

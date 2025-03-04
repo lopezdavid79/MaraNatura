@@ -23,10 +23,7 @@ class Principal(wx.Frame):
         file_menu.AppendSeparator()
         list_product_item = wx.MenuItem(file_menu, wx.ID_ANY, "Lista de Productos")
         file_menu.Append(list_product_item)
-        file_menu.AppendSeparator()
-        exit_item = wx.MenuItem(file_menu, wx.ID_ANY, "Salir")
-        file_menu.Append(exit_item)
-
+        
         # Crear el menú "Clientes"
         client_menu = wx.Menu()
         new_client_item = wx.MenuItem(client_menu, wx.ID_ANY, "Nuevo Cliente")
