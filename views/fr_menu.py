@@ -2,6 +2,7 @@ import wx
 from backapp import BackupFrame
 from reports.rp_ventas import  ReporteVentasFrame
 from Views.fr_listProduct import ListaProductos
+from Views.fr_listPedido import ListPedido
 from Views.fr_producto import VentanaProducto
 from Views.fr_listSale import ListSale
 from Views.fr_cliente import VentanaCliente  # Importamos la ventana de clientes
@@ -23,6 +24,9 @@ class Principal(wx.Frame):
         file_menu.AppendSeparator()
         list_product_item = wx.MenuItem(file_menu, wx.ID_ANY, "Lista de Productos")
         file_menu.Append(list_product_item)
+        file_menu.AppendSeparator()
+        list_pedido_item = wx.MenuItem(file_menu, wx.ID_ANY, "Lista de Pedidos")
+        file_menu.Append(list_pedido_item)
         
         # Crear el menú "Clientes"
         client_menu = wx.Menu()
@@ -57,6 +61,7 @@ class Principal(wx.Frame):
         # Enlazar los eventos de los menús
         self.Bind(wx.EVT_MENU, self.on_new_product, new_product_item)
         self.Bind(wx.EVT_MENU, self.on_list_product, list_product_item)
+        self.Bind(wx.EVT_MENU, self.on_list_pedido, list_pedido_item)
         self.Bind(wx.EVT_MENU, self.on_exit, exit_item)
         self.Bind(wx.EVT_MENU, self.on_new_client, new_client_item)  # Nuevo Cliente
         self.Bind(wx.EVT_MENU, self.on_list_client, list_client_item)  # Lista de Clientes
@@ -79,6 +84,15 @@ class Principal(wx.Frame):
         """Abre el formulario de lista de productos."""
         list_producto_form = ListaProductos(self, id=None, title="Lista de Productos")
         list_producto_form.Show()
+
+
+    def on_list_pedido(self, event):
+        ReproductorSonido.reproducir("screenCurtainOn.wav")
+        """Abre el formulario de lista de productos."""
+        list_pedido_form = ListPedido(self, id=None, title="Lista de Pedidos")
+        list_pedido_form.Show()
+
+    
 
     def on_new_client(self, event):
         """Abre el formulario para agregar un nuevo cliente."""

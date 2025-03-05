@@ -195,7 +195,7 @@ class EditarProductoDialog(wx.Dialog):
             vbox.Add(self.txt_nombre, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
             
             vbox.Add(wx.StaticText(panel, label="Detalle:"), flag=wx.LEFT | wx.TOP, border=10)
-            self.txt_detalle= wx.TextCtrl(panel, value=producto.get("detalle", ""))
+            self.txt_detalle= wx.TextCtrl(panel, value=producto.get("detalle", ""), style=wx.TE_MULTILINE)
             vbox.Add(self.txt_detalle, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
             vbox.Add(wx.StaticText(panel, label="Stock:"), flag=wx.LEFT | wx.TOP, border=10)

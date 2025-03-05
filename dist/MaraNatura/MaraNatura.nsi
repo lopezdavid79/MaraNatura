@@ -1,8 +1,8 @@
 !include "LogicLib.nsh"
 !include "MUI2.nsh"
 
-Name "MaraNatura v1.0.0"
-OutFile "MaraNatura-Instalador.exe"
+Name "MaraNatura v1.0.1"
+OutFile "MaraNatura-v1.0.1-Instalador.exe"
 InstallDir "$PROGRAMFILES\MaraNatura"
 InstallDirRegKey HKCU "Software\MaraNatura" ""
 

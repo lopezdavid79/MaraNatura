@@ -1,0 +1,16 @@
+[
+    {
+        "id": 1,
+        "fecha": "04/03/2025",
+        "cliente": "maria ponce",
+        "detalle": "desodorante y shampu",
+        "estado": "Pendiente"
+    },
+    {
+        "id": 2,
+        "fecha": "04/02/2025",
+        "cliente": "paola suarez",
+        "detalle": "jabones liquidos ,desodorantes y jabones",
+        "estado": "Pendiente"
+    }
+]
