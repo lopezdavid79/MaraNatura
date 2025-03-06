@@ -64,5 +64,11 @@
         "nombre": "Juan Russo",
         "dire": "Bv. argentinos 334",
         "tel": "3534998556"
+    },
+    {
+        "id": 12,
+        "nombre": "Olga Fernadez",
+        "dire": "Corrientes 1262",
+        "tel": "3541663725"
     }
 ]

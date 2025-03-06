@@ -1,53 +1,59 @@
 import wx
 import wx.lib.mixins.listctrl as listmix
-from module.eventos import EVT_ACTUALIZAR_PRODUCTOS, ActualizarProductosEvent  # Importar el evento
+from module.eventos import EVT_ACTUALIZAR_PRODUCTOS, ActualizarProductosEvent
 from module.ReproductorSonido import ReproductorSonido
 from module.GestionProducto import GestionProductos
 from Views.fr_producto import VentanaProducto
 from Views.fr_listSale import AgregarVentaDialog
-# Inicialización de la gestión de productos
+
 gestion_productos = GestionProductos()
 
 class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
     def __init__(self, parent, id=None, title="Nuevo Producto", *args, **kwds):
-        super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds) # Corrección
-
-        self.parent_venta = parent  # Guarda la referencia a la ventana de ventas
+        super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds)
+        self.parent_venta = parent
         panel = wx.Panel(self)
-        # Registra el manejador del evento personalizado
         self.Bind(EVT_ACTUALIZAR_PRODUCTOS, lambda event: self.actualizar_lista_productos(event))
 
- 
-        
+        # Campo de búsqueda
+        label_buscar = wx.StaticText(panel, label="Buscar Cliente:", pos=(10, 245))
+        self.search_ctrl = wx.TextCtrl(panel, pos=(10, 270), size=(200, -1), style=wx.TE_PROCESS_ENTER)
+        self.search_ctrl.Bind(wx.EVT_TEXT_ENTER, self.buscar_productos)  # Vincular Enter
+       
+        btn_buscar = wx.Button(panel, label="Buscar", pos=(220, 270))
+        btn_buscar.Bind(wx.EVT_BUTTON, self.buscar_productos)
+
         # Crear la lista de productos
         self.list_ctrl = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.BORDER_SUNKEN, pos=(10, 10), size=(460, 250))
         self.list_ctrl.InsertColumn(0, 'Producto', width=50)
         self.list_ctrl.InsertColumn(1, 'Código', width=150)
         self.list_ctrl.InsertColumn(2, 'Stock', width=80)
         self.list_ctrl.InsertColumn(3, 'Precio', width=80)
-        
+
         # Cargar productos en la lista
         self.cargar_productos()
-        
+
         # Evento para detectar tecla Enter
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED, self.mostrar_detalle_producto)
 
         # Botón para agregar producto
         btn_nuevo = wx.Button(panel, label="Nuevo Producto", pos=(50, 300))
         btn_nuevo.Bind(wx.EVT_BUTTON, self.abrir_dialogo_nuevo)
-        
+
         # Botón para cerrar
         btn_cerrar = wx.Button(panel, label="Cerrar", pos=(300, 300))
         btn_cerrar.Bind(wx.EVT_BUTTON, self.on_close)
-        #boton para actualizar 
-        btn_actual= wx.Button(panel, label="Actualizar", pos=(150, 300))
+
+        # Botón para actualizar
+        btn_actual = wx.Button(panel, label="Actualizar", pos=(150, 300))
         btn_actual.Bind(wx.EVT_BUTTON, self.actualizar_lista_productos)
+
         # Capturar eventos de teclado
         self.Bind(wx.EVT_CHAR_HOOK, self.on_key_down)
-        self.Show()
-    
-    def on_key_down(self, event):
 
+        self.Show()
+
+    def on_key_down(self, event):
         key_code = event.GetKeyCode()
         control_presionado = event.ControlDown()
 
@@ -57,49 +63,66 @@ class ListaProductos(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             self.on_close(None)
         event.Skip()  # Permitir que otros eventos se procesen
 
-
-
-
-    def cargar_productos(self):
-        self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos productos
+    def cargar_productos(self, nombre_busqueda=None):
+        self.list_ctrl.DeleteAllItems()
         productos = gestion_productos.obtener_todos()
-        print("Productos obtenidos:", productos)  # 🛠️ Depuración
 
-        if not isinstance(productos, list):  # Evitar errores si devuelve otra cosa
+        if not isinstance(productos, list):
             print("❌ Error: `obtener_todos()` no devolvió una lista")
             return
-            # Recorre la lista de productos
+
         for producto in productos:
-            # Extrae el id y los datos del producto
-            id_producto = producto["id"]
-            datos = producto  # Todo el diccionario del producto
-            
-            # Inserta el producto en la lista de control
-            index = self.list_ctrl.InsertItem(self.list_ctrl.GetItemCount(), datos["nombre"])
-            self.list_ctrl.SetItem(index, 1, str(id_producto))
-            self.list_ctrl.SetItem(index, 2, str(datos["stock"]))
-            self.list_ctrl.SetItem(index, 3, str(datos["precio"]))
+            if nombre_busqueda:
+                if nombre_busqueda.lower() not in producto["nombre"].lower():
+                    continue  # Saltar productos que no coinciden con la búsqueda
+
+            index = self.list_ctrl.InsertItem(self.list_ctrl.GetItemCount(), producto["nombre"])
+            self.list_ctrl.SetItem(index, 1, str(producto["id"]))
+            self.list_ctrl.SetItem(index, 2, str(producto["stock"]))
+            self.list_ctrl.SetItem(index, 3, str(producto["precio"]))
 
     def mostrar_detalle_producto(self, event):
         index = event.GetIndex()
-        id_producto = int(self.list_ctrl.GetItemText(index, 1))  # ✅ Obtener el ID desde la segunda columna
+        id_producto = int(self.list_ctrl.GetItemText(index, 1))
 
-        # Obtener los detalles del producto
         productos = gestion_productos.obtener_todos()
-        
-        # Buscar el producto por ID en la lista
         producto = next((p for p in productos if p["id"] == id_producto), None)
 
         if producto:
             dialogo = DetalleProductoDialog(self, id_producto, producto)
             dialogo.ShowModal()
             dialogo.Destroy()
-            self.cargar_productos()  # Actualizar la lista después de la edición
+            self.cargar_productos()
         else:
             print(f"❌ Error: Producto con ID {id_producto} no encontrado")
 
+    def abrir_dialogo_nuevo(self, event):
+        dialogo = VentanaProducto(self)
+        dialogo.ShowModal()
+        dialogo.Destroy()
+        self.cargar_productos()
 
+    def on_close(self, event):
+        self.Close()
 
+    def actualizar_lista_productos(self, event=None):
+        self.cargar_productos()
+
+    def buscar_productos(self, event):
+        nombre_busqueda = self.search_ctrl.GetValue()
+        self.cargar_productos(nombre_busqueda)
+
+class DetalleProductoDialog(wx.Dialog):
+    def __init__(self, parent, id_producto, producto):
+        super().__init__(parent, title=f"Detalle del Producto {id_producto}", size=(300, 200))
+        panel = wx.Panel(self)
+        # Aquí puedes agregar los controles para mostrar los detalles del producto
+        # ...
+
+if __name__ == '__main__':
+    app = wx.App(False)
+    frame = ListaProductos(None)
+    app.MainLoop()
     def abrir_dialogo_nuevo(self, event):
         ReproductorSonido.reproducir("screenCurtainOn.wav")
         dialogo = AgregarProductoDialog(self)
@@ -195,7 +218,7 @@ class EditarProductoDialog(wx.Dialog):
             vbox.Add(self.txt_nombre, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
             
             vbox.Add(wx.StaticText(panel, label="Detalle:"), flag=wx.LEFT | wx.TOP, border=10)
-            self.txt_detalle= wx.TextCtrl(panel, value=producto.get("detalle", ""), style=wx.TE_MULTILINE)
+            self.txt_detalle= wx.TextCtrl(panel, value=producto.get("detalle", ""))
             vbox.Add(self.txt_detalle, flag=wx.EXPAND | wx.LEFT | wx.RIGHT, border=10)
 
             vbox.Add(wx.StaticText(panel, label="Stock:"), flag=wx.LEFT | wx.TOP, border=10)

@@ -12,7 +12,14 @@ class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         super().__init__(parent, id=wx.ID_ANY, title=title, *args, **kwds)
 
         panel = wx.Panel(self)
+# Campo de búsqueda
+        self.search_ctrl = wx.TextCtrl(panel, pos=(10, 270), size=(200, -1), style=wx.TE_PROCESS_ENTER)
+        self.search_ctrl.Bind(wx.EVT_TEXT_ENTER, self.buscar_cliente)  # Vincular Enter
+       
+        btn_buscar = wx.Button(panel, label="Buscar", pos=(220, 270))
+        btn_buscar.Bind(wx.EVT_BUTTON, self.buscar_cliente)
 
+        
         # Crear la lista de clientes
         self.list_ctrl = wx.ListCtrl(panel, style=wx.LC_REPORT | wx.BORDER_SUNKEN, pos=(10, 10), size=(460, 250))
         self.list_ctrl.InsertColumn(0, 'ID', width=50)
@@ -48,17 +55,19 @@ class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
         print("Lista actualizada en la interfaz")
         sys.stdout.flush()  # <-- Fuerza la salida en la consola
         ReproductorSonido.reproducir("refresh.wav")
-
-    def cargar_clientes(self):
+    def cargar_clientes(self, nombre_busqueda=None):
         self.list_ctrl.DeleteAllItems()  # Limpiar la lista antes de cargar nuevos clientes
         clientes = gestion_clientes.obtener_todos()
 
         for id_cliente, datos in clientes.items():
+            if nombre_busqueda:
+                if nombre_busqueda.lower() not in datos["nombre"].lower():
+                    continue  # Saltar clientes que no coinciden con la búsqueda
+
             index = self.list_ctrl.InsertItem(self.list_ctrl.GetItemCount(), str(id_cliente))
             self.list_ctrl.SetItem(index, 1, datos["nombre"])
             self.list_ctrl.SetItem(index, 2, datos["tel"])
             self.list_ctrl.SetItem(index, 3, datos["dire"])
-
     def mostrar_detalle_cliente(self, event):
         index = event.GetIndex()
         id_cliente = self.list_ctrl.GetItemText(index)
@@ -71,6 +80,10 @@ class ListaClientes(wx.Frame, listmix.ListCtrlAutoWidthMixin):
             dialogo.ShowModal()
             dialogo.Destroy()
             self.cargar_clientes()  # Actualizar la lista después de la edición
+    def buscar_cliente(self, event):
+        nombre_busqueda = self.search_ctrl.GetValue()
+        self.cargar_clientes(nombre_busqueda)
+
 
     def abrir_dialogo_nuevo(self, event):
         ReproductorSonido.reproducir("screenCurtainOn.wav")
